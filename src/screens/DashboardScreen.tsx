@@ -1,11 +1,12 @@
 import React from 'react';
 import { useExpenses } from '../context/ExpenseContext';
 import { useSettings } from '../context/SettingsContext';
-import { formatCurrency } from '../utils/currency';
 import { ExpenseItem } from '../components/expense/ExpenseItem';
 import { BudgetCard } from '../components/budget/BudgetCard';
 import type { Expense } from '../types';
 import { Plus, ArrowRight, TrendingUp } from 'lucide-react';
+
+import { AnimatedNumber } from '../components/common/AnimatedNumber';
 
 interface DashboardScreenProps {
   onOpenAddExpense: () => void;
@@ -30,7 +31,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
       {/* Top Section: Overview & Budget */}
       <div className="space-y-2.5">
         {/* 1. Month Hero Spending Card (Apple Glass Panel) */}
-        <div className="p-3.5 rounded-2xl glass-panel flex items-center justify-between">
+        <div className="p-3.5 rounded-2xl glass-panel flex items-center justify-between animate-fade-slide-up">
           <div>
             <div className="flex items-center gap-1.5 mb-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
@@ -38,11 +39,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 {monthName} Spending
               </span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold tabular-nums tracking-tight text-neutral-900 dark:text-neutral-50">
-              {formatCurrency(thisMonthTotal, currency.code)}
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50">
+              <AnimatedNumber value={thisMonthTotal} currencyCode={currency.code} />
             </h2>
             <div className="flex items-center gap-2 mt-1 text-[11px] text-neutral-500 dark:text-neutral-400 font-medium">
-              <span>Today: <strong className="tabular-nums text-neutral-900 dark:text-neutral-200 font-semibold">{formatCurrency(todayTotal, currency.code)}</strong></span>
+              <span>Today: <strong className="tabular-nums text-neutral-900 dark:text-neutral-200 font-semibold"><AnimatedNumber value={todayTotal} currencyCode={currency.code} /></strong></span>
               <span>•</span>
               <span>{expenses.length} records</span>
             </div>
@@ -56,13 +57,15 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         </div>
 
         {/* 2. Compact Monthly Budget Strip */}
-        <BudgetCard spentAmount={thisMonthTotal} />
+        <div className="animate-fade-slide-up stagger-1">
+          <BudgetCard spentAmount={thisMonthTotal} />
+        </div>
 
         {/* 3. Big User-Friendly Apple Glass Action Button */}
         <button
           type="button"
           onClick={onOpenAddExpense}
-          className="w-full py-3 px-4 rounded-2xl glass-button hover:border-emerald-500/40 text-neutral-900 dark:text-white font-semibold text-xs flex items-center justify-between active:scale-[0.98] transition-all cursor-pointer group"
+          className="w-full py-3 px-4 rounded-2xl glass-button hover:border-emerald-500/40 text-neutral-900 dark:text-white font-semibold text-xs flex items-center justify-between active:scale-[0.97] transition-all cursor-pointer group animate-fade-slide-up stagger-2"
         >
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 rounded-lg glass-button-primary text-black flex items-center justify-center">
@@ -78,7 +81,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
       </div>
 
       {/* Bottom Section: Recent Activity */}
-      <div className="pt-2 flex-1 flex flex-col justify-end min-h-0">
+      <div className="pt-2 flex-1 flex flex-col justify-end min-h-0 animate-fade-slide-up stagger-3">
         <div className="flex items-center justify-between mb-2 px-0.5">
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
@@ -105,7 +108,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
         {/* Expense Rows or Empty State */}
         {expenses.length === 0 && !isLoading ? (
-          <div className="p-4 rounded-2xl glass-panel text-center flex flex-col items-center justify-center">
+          <div className="p-4 rounded-2xl glass-panel text-center flex flex-col items-center justify-center animate-fade-slide-up">
             <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
               No transactions logged yet
             </p>
@@ -115,15 +118,20 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
           </div>
         ) : (
           <div className="space-y-1.5">
-            {recentExpenses.map((exp) => {
+            {recentExpenses.map((exp, idx) => {
               const category = categories.find((c) => c.id === exp.categoryId);
               return (
-                <ExpenseItem
+                <div
                   key={exp.id}
-                  expense={exp}
-                  category={category}
-                  onEdit={onEditExpense}
-                />
+                  className="animate-fade-slide-up"
+                  style={{ animationDelay: `${(idx + 1) * 40}ms` }}
+                >
+                  <ExpenseItem
+                    expense={exp}
+                    category={category}
+                    onEdit={onEditExpense}
+                  />
+                </div>
               );
             })}
           </div>

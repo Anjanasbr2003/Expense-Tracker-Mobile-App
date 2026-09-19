@@ -12,13 +12,23 @@ import { ExpenseFormModal } from './components/expense/ExpenseFormModal';
 import { ConfirmModal } from './components/common/ConfirmModal';
 import type { Expense } from './types';
 
+import { LaunchScreen } from './components/common/LaunchScreen';
+
 const MainApp: React.FC = () => {
+  const [hasLaunched, setHasLaunched] = useState<boolean>(() => {
+    return sessionStorage.getItem('spendwise_launched') === 'true';
+  });
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [deletingExpense, setDeletingExpense] = useState<Expense | null>(null);
 
   const { deleteExpense } = useExpenses();
+
+  const handleLaunchComplete = () => {
+    sessionStorage.setItem('spendwise_launched', 'true');
+    setHasLaunched(true);
+  };
 
   const handleOpenAdd = () => {
     setSelectedExpense(null);
@@ -79,32 +89,37 @@ const MainApp: React.FC = () => {
   const headerInfo = getHeaderInfo();
 
   return (
-    <MobileFrame>
-      <Header title={headerInfo.title} subtitle={headerInfo.subtitle} />
+    <>
+      {!hasLaunched && <LaunchScreen onComplete={handleLaunchComplete} />}
 
-      <main className="flex-1 flex flex-col overflow-hidden relative">
-        {activeTab === 'home' && (
-          <DashboardScreen
-            onOpenAddExpense={handleOpenAdd}
-            onEditExpense={handleOpenEdit}
-            onNavigateToHistory={() => setActiveTab('history')}
-          />
-        )}
+      <MobileFrame>
+        <Header title={headerInfo.title} subtitle={headerInfo.subtitle} />
 
-        {activeTab === 'history' && (
-          <HistoryScreen
-            onOpenAddExpense={handleOpenAdd}
-            onEditExpense={handleOpenEdit}
-            onRequestDelete={handleRequestDelete}
-          />
-        )}
+        <main className="flex-1 flex flex-col overflow-hidden relative">
+          <div key={activeTab} className="flex-1 flex flex-col overflow-hidden animate-fade-slide-up">
+            {activeTab === 'home' && (
+              <DashboardScreen
+                onOpenAddExpense={handleOpenAdd}
+                onEditExpense={handleOpenEdit}
+                onNavigateToHistory={() => setActiveTab('history')}
+              />
+            )}
 
-        {activeTab === 'analytics' && (
-          <AnalyticsScreen onOpenAddExpense={handleOpenAdd} />
-        )}
+            {activeTab === 'history' && (
+              <HistoryScreen
+                onOpenAddExpense={handleOpenAdd}
+                onEditExpense={handleOpenEdit}
+                onRequestDelete={handleRequestDelete}
+              />
+            )}
 
-        {activeTab === 'settings' && <SettingsScreen />}
-      </main>
+            {activeTab === 'analytics' && (
+              <AnalyticsScreen onOpenAddExpense={handleOpenAdd} />
+            )}
+
+            {activeTab === 'settings' && <SettingsScreen />}
+          </div>
+        </main>
 
       {/* Persistent Bottom Navigation */}
       <BottomNav
@@ -136,7 +151,8 @@ const MainApp: React.FC = () => {
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeletingExpense(null)}
       />
-    </MobileFrame>
+      </MobileFrame>
+    </>
   );
 };
 

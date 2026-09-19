@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AlertTriangle, Trash2, X } from 'lucide-react';
 
 interface ConfirmModalProps {
@@ -22,12 +22,38 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   onConfirm,
   onCancel,
 }) => {
+  const [isClosing, setIsClosing] = useState(false);
+
   if (!isOpen) return null;
 
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onCancel();
+    }, 160);
+  };
+
+  const handleConfirmAction = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onConfirm();
+    }, 140);
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-sm transition-opacity animate-in fade-in duration-150">
+    <div
+      onClick={handleClose}
+      className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-sm transition-opacity duration-150 ${
+        isClosing ? 'opacity-0' : 'animate-in fade-in duration-150'
+      }`}
+    >
       <div
-        className="w-full max-w-sm glass-panel rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl transition-all transform animate-in slide-in-from-bottom duration-200"
+        onClick={(e) => e.stopPropagation()}
+        className={`w-full max-w-sm glass-panel rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl transition-all duration-200 transform ${
+          isClosing ? 'translate-y-6 opacity-0' : 'animate-in slide-in-from-bottom duration-200'
+        }`}
         role="dialog"
         aria-modal="true"
       >
@@ -42,7 +68,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             {isDestructive ? <Trash2 size={18} /> : <AlertTriangle size={18} />}
           </div>
           <button
-            onClick={onCancel}
+            onClick={handleClose}
             className="w-8 h-8 rounded-xl glass-button flex items-center justify-center text-neutral-400 hover:text-white transition-colors active:scale-90"
             aria-label="Close"
           >
@@ -60,14 +86,14 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
         <div className="flex items-center gap-2.5">
           <button
             type="button"
-            onClick={onCancel}
+            onClick={handleClose}
             className="flex-1 py-3 px-4 rounded-xl glass-button text-xs font-bold text-neutral-700 dark:text-neutral-300 active:scale-95 transition-all cursor-pointer"
           >
             {cancelText}
           </button>
           <button
             type="button"
-            onClick={onConfirm}
+            onClick={handleConfirmAction}
             className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold active:scale-95 transition-all cursor-pointer shadow-md ${
               isDestructive
                 ? 'glass-button-danger text-white'

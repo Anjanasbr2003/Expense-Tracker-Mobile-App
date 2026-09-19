@@ -4,6 +4,8 @@ import { calculateBudgetStatus } from '../../utils/calculations';
 import { formatCurrency } from '../../utils/currency';
 import { Target, AlertCircle, Edit3, Check, X } from 'lucide-react';
 
+import { AnimatedNumber } from '../common/AnimatedNumber';
+
 interface BudgetCardProps {
   spentAmount: number;
 }
@@ -141,7 +143,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({ spentAmount }) => {
       {/* Figures Row */}
       <div className="flex items-baseline justify-between mb-2">
         <div className="text-xs font-bold tabular-nums text-neutral-900 dark:text-neutral-100">
-          <span>{formatCurrency(status.spentAmount, currency.code)}</span>
+          <AnimatedNumber value={status.spentAmount} currencyCode={currency.code} />
           <span className="text-[11px] text-neutral-500 dark:text-neutral-400 font-normal ml-1">
             / {formatCurrency(status.budgetAmount, currency.code)}
           </span>
@@ -155,9 +157,15 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({ spentAmount }) => {
                 : 'text-neutral-500 dark:text-neutral-400'
             }
           >
-            {status.isOverBudget
-              ? `+${formatCurrency(Math.abs(status.remainingAmount), currency.code)} over`
-              : `${formatCurrency(status.remainingAmount, currency.code)} left`}
+            {status.isOverBudget ? (
+              <>
+                +<AnimatedNumber value={Math.abs(status.remainingAmount)} currencyCode={currency.code} /> over
+              </>
+            ) : (
+              <>
+                <AnimatedNumber value={status.remainingAmount} currencyCode={currency.code} /> left
+              </>
+            )}
           </span>
         </div>
       </div>

@@ -147,8 +147,10 @@ export const SettingsScreen: React.FC = () => {
     <div className="flex-1 flex flex-col overflow-y-auto p-3.5 space-y-3">
       {/* Toast Notification */}
       {statusNotification && (
-        <div className="p-2.5 bg-emerald-500 text-black rounded-xl text-xs font-semibold shadow-lg flex items-center gap-1.5 animate-in fade-in duration-150">
-          <Check size={15} strokeWidth={2.5} />
+        <div className="p-3 glass-panel border border-emerald-500/40 text-emerald-500 dark:text-emerald-400 rounded-2xl text-xs font-bold shadow-xl flex items-center gap-2 animate-scale-check">
+          <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+            <Check size={13} strokeWidth={3} />
+          </div>
           <span>{statusNotification}</span>
         </div>
       )}
