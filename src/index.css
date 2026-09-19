@@ -25,11 +25,15 @@
   }
 
   body {
-    background-color: #ffffff;
-    transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease;
+    background-color: #f8fafc;
+    color: #0f172a;
+    transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
   }
   :where(.dark) body, body.dark {
-    background-color: #000000;
+    background-color: #030805;
+    color: #f8fafc;
+    background-image: radial-gradient(ellipse 100% 55% at 50% -10%, rgba(34, 197, 94, 0.24) 0%, rgba(16, 185, 129, 0.08) 45%, transparent 75%);
+    background-attachment: fixed;
   }
 
   /* Monospace tabular figures for all monetary amounts */
@@ -65,31 +69,62 @@
   padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
 }
 
-/* Emil Kowalski Circular View Transition API Rules */
+/* Emil Kowalski Circular View Transition API Rules (Seamless 60-120fps) */
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition: none !important;
+}
+
+::view-transition-group(root) {
+  animation-duration: 0.38s;
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
+  will-change: clip-path;
 }
+
 ::view-transition-old(root) {
   z-index: 1;
 }
+
 ::view-transition-new(root) {
   z-index: 9999;
 }
 
-/* Fluid global theme transition class applied during toggling */
+/* Fluid fallback theme transition class */
 .theme-transition,
 .theme-transition *,
 .theme-transition *::before,
 .theme-transition *::after {
-  transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              color 0.3s ease-out,
-              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              color 0.25s ease-out,
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-/* Apple Frosted Glassmorphism Design System */
+/* ==========================================================================
+   Dark Emerald Glassmorphism System (Inherited from Reference UI)
+   ========================================================================== */
+
+/* Dark emerald frosted card */
+.glass-emerald-card {
+  background: rgba(13, 31, 21, 0.72);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  box-shadow: 0 10px 32px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+}
+:not(.dark) .glass-emerald-card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  box-shadow: 0 6px 20px 0 rgba(16, 185, 129, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Standard frosted glass panel */
 .glass-panel {
   background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(20px) saturate(180%);
@@ -97,31 +132,31 @@
   border: 1px solid rgba(0, 0, 0, 0.08);
   box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
 }
-
 :where(.dark) .glass-panel, .dark .glass-panel {
-  background: rgba(18, 18, 18, 0.72);
+  background: rgba(14, 28, 20, 0.68);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.16);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
 }
 
-.glass-dock {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(24px) saturate(190%);
-  -webkit-backdrop-filter: blur(24px) saturate(190%);
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 -4px 24px 0 rgba(0, 0, 0, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+/* Floating bottom glass dock matching reference UI */
+.glass-dock-floating {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08), inset 0 1px 0 0 rgba(255, 255, 255, 0.95);
+}
+:where(.dark) .glass-dock-floating, .dark .glass-dock-floating {
+  background: rgba(8, 20, 13, 0.82);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.7), 0 0 24px 0 rgba(16, 185, 129, 0.12), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
 }
 
-:where(.dark) .glass-dock, .dark .glass-dock {
-  background: rgba(8, 8, 8, 0.8);
-  backdrop-filter: blur(24px) saturate(190%);
-  -webkit-backdrop-filter: blur(24px) saturate(190%);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 -8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.14);
-}
-
+/* Glass button pills */
 .glass-button {
   background: rgba(255, 255, 255, 0.78);
   backdrop-filter: blur(16px) saturate(160%);
@@ -129,24 +164,23 @@
   border: 1px solid rgba(0, 0, 0, 0.08);
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.85);
 }
-
 :where(.dark) .glass-button, .dark .glass-button {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(16px) saturate(160%);
   -webkit-backdrop-filter: blur(16px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(34, 197, 94, 0.18);
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
 }
 
+/* Primary Glass Button with Neon Lime / Emerald Gradient */
 .glass-button-primary {
-  background: linear-gradient(180deg, rgba(16, 185, 129, 0.95) 0%, rgba(5, 150, 105, 0.98) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  box-shadow: 0 4px 20px 0 rgba(16, 185, 129, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.45);
+  background: linear-gradient(180deg, #a3e635 0%, #22c55e 100%);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 20px 0 rgba(34, 197, 94, 0.4), inset 0 1px 1px 0 rgba(255, 255, 255, 0.6);
 }
-
 .glass-button-primary:hover, .glass-button-primary:active {
-  background: linear-gradient(180deg, rgba(16, 185, 129, 1) 0%, rgba(5, 150, 105, 1) 100%);
-  box-shadow: 0 6px 24px 0 rgba(16, 185, 129, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.6);
+  background: linear-gradient(180deg, #bef264 0%, #16a34a 100%);
+  box-shadow: 0 6px 26px 0 rgba(34, 197, 94, 0.55), inset 0 1px 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .glass-button-danger {
@@ -155,25 +189,33 @@
   box-shadow: 0 4px 18px 0 rgba(239, 68, 68, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.4);
 }
 
-.glass-button-danger:hover, .glass-button-danger:active {
-  background: linear-gradient(180deg, rgba(239, 68, 68, 1) 0%, rgba(220, 38, 38, 1) 100%);
-  box-shadow: 0 6px 22px 0 rgba(239, 68, 68, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.55);
+/* Multi-color Hatched / Striped Spending Footprint Bar Patterns */
+.striped-pattern-lime {
+  background: repeating-linear-gradient(
+    -45deg,
+    #bef264,
+    #bef264 4px,
+    #a3e635 4px,
+    #a3e635 8px
+  );
 }
-
-.glass-card {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.03), inset 0 1px 0 0 rgba(255, 255, 255, 0.75);
+.striped-pattern-orange {
+  background: repeating-linear-gradient(
+    -45deg,
+    #fb923c,
+    #fb923c 4px,
+    #ea580c 4px,
+    #ea580c 8px
+  );
 }
-
-:where(.dark) .glass-card, .dark .glass-card {
-  background: rgba(18, 18, 18, 0.6);
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+.striped-pattern-cyan {
+  background: repeating-linear-gradient(
+    -45deg,
+    #38bdf8,
+    #38bdf8 4px,
+    #0284c7 4px,
+    #0284c7 8px
+  );
 }
 
 /* ==========================================================================
@@ -234,16 +276,19 @@
   100% { transform: scale(1); opacity: 1; }
 }
 
+/* Synchronized 1.5-second Logo Animation */
 @keyframes launchLogo {
-  0% { opacity: 0; transform: scale(0.85); }
-  65% { opacity: 1; transform: scale(1.03); }
+  0% { opacity: 0; transform: scale(0.82); }
+  40% { opacity: 1; transform: scale(1.04); }
+  75% { transform: scale(0.99); }
   100% { opacity: 1; transform: scale(1); }
 }
 
+/* Synchronized 1.5-second Aura Pulse */
 @keyframes auraPulse {
   0% { opacity: 0; transform: scale(0.7); }
-  45% { opacity: 0.45; transform: scale(1.15); }
-  100% { opacity: 0; transform: scale(1.4); }
+  50% { opacity: 0.55; transform: scale(1.2); }
+  100% { opacity: 0; transform: scale(1.5); }
 }
 
 @keyframes floatSettle {
@@ -291,11 +336,11 @@
 }
 
 .animate-launch-logo {
-  animation: launchLogo 750ms var(--ease-out-smooth) both;
+  animation: launchLogo 1500ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .animate-aura-pulse {
-  animation: auraPulse 1100ms var(--ease-out-smooth) both;
+  animation: auraPulse 1500ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .animate-float-settle {
@@ -304,6 +349,11 @@
 
 .animate-collapse-out {
   animation: collapseOut 220ms var(--ease-out-smooth) forwards;
+}
+
+/* Hardware-acceleration utility */
+.will-change-transform {
+  will-change: transform;
 }
 
 /* Stagger delay utilities */
@@ -337,5 +387,3 @@
     transform: none !important;
   }
 }
-
-

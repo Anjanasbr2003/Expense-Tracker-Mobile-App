@@ -1,26 +1,27 @@
 import React from 'react';
+import { flushSync } from 'react-dom';
 
 /**
  * Executes Emil Kowalski's signature circular reveal theme transition
- * using the modern View Transitions API with graceful CSS transition fallback.
+ * using the modern View Transitions API with seamless frame-rate optimization.
+ * Suppresses intermediate CSS transitions during the snapshot phase to prevent
+ * any stuttering or frame drops in the middle of the circular expansion.
  */
 export function executeThemeTransition(
   toggleFn: () => void | Promise<void>,
   event?: React.MouseEvent | React.TouchEvent
 ) {
-  // Check if View Transitions API is supported and user hasn't requested reduced motion
   const doc = document as any;
   const supportsViewTransition =
     typeof doc.startViewTransition === 'function' &&
     !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (!supportsViewTransition) {
-    // Add brief smooth transition class to root
     document.documentElement.classList.add('theme-transition');
     toggleFn();
     setTimeout(() => {
       document.documentElement.classList.remove('theme-transition');
-    }, 400);
+    }, 350);
     return;
   }
 
@@ -44,13 +45,17 @@ export function executeThemeTransition(
     Math.max(y, window.innerHeight - y)
   );
 
-  const transition = doc.startViewTransition(async () => {
-    await toggleFn();
+  // Disable conflicting element-level CSS transitions during view-transition snapshot
+  document.documentElement.classList.add('theme-switching');
+
+  const transition = doc.startViewTransition(() => {
+    flushSync(() => {
+      toggleFn();
+    });
   });
 
   transition.ready.then(() => {
-    // Animate circular clipPath on the incoming theme snapshot
-    doc.documentElement.animate(
+    const animation = doc.documentElement.animate(
       {
         clipPath: [
           `circle(0px at ${x}px ${y}px)`,
@@ -58,10 +63,18 @@ export function executeThemeTransition(
         ],
       },
       {
-        duration: 450,
+        duration: 380,
         easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
         pseudoElement: '::view-transition-new(root)',
       }
     );
+
+    animation.finished.finally(() => {
+      document.documentElement.classList.remove('theme-switching');
+    });
+  });
+
+  transition.finished.finally(() => {
+    document.documentElement.classList.remove('theme-switching');
   });
 }

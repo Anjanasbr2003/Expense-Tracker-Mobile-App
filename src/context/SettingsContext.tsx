@@ -102,6 +102,20 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const setTheme = async (theme: ThemeMode) => {
+    const root = document.documentElement;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    let darkActive = false;
+    if (theme === 'dark') darkActive = true;
+    else if (theme === 'light') darkActive = false;
+    else darkActive = mediaQuery.matches;
+
+    if (darkActive) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    setIsDark(darkActive);
+
     const updated = { ...settings, theme };
     await persistSettings(updated);
   };
