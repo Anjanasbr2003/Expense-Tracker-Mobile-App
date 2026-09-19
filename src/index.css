@@ -176,3 +176,166 @@
   box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
 }
 
+/* ==========================================================================
+   Motion & Animation Design System Tokens & Keyframes
+   ========================================================================== */
+:root {
+  --motion-instant: 120ms;
+  --motion-micro: 180ms;
+  --motion-standard: 250ms;
+  --motion-extended: 350ms;
+  --motion-data: 420ms;
+  --ease-out-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleCheck {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.18); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes launchLogo {
+  0% { opacity: 0; transform: scale(0.85); }
+  65% { opacity: 1; transform: scale(1.03); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes auraPulse {
+  0% { opacity: 0; transform: scale(0.7); }
+  45% { opacity: 0.45; transform: scale(1.15); }
+  100% { opacity: 0; transform: scale(1.4); }
+}
+
+@keyframes floatSettle {
+  0% { opacity: 0; transform: translateY(8px) scale(0.96); }
+  60% { opacity: 1; transform: translateY(-2px) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes collapseOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    max-height: 80px;
+    margin-bottom: 6px;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.94);
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+/* Reusable animation utilities */
+.animate-shake {
+  animation: shake 280ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.animate-fade-slide-up {
+  animation: fadeSlideUp 260ms var(--ease-out-smooth) both;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 240ms var(--ease-out-smooth) both;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 240ms var(--ease-out-smooth) both;
+}
+
+.animate-scale-check {
+  animation: scaleCheck 260ms var(--ease-spring) both;
+}
+
+.animate-launch-logo {
+  animation: launchLogo 750ms var(--ease-out-smooth) both;
+}
+
+.animate-aura-pulse {
+  animation: auraPulse 1100ms var(--ease-out-smooth) both;
+}
+
+.animate-float-settle {
+  animation: floatSettle 380ms var(--ease-out-smooth) both;
+}
+
+.animate-collapse-out {
+  animation: collapseOut 220ms var(--ease-out-smooth) forwards;
+}
+
+/* Stagger delay utilities */
+.stagger-1 { animation-delay: 35ms; }
+.stagger-2 { animation-delay: 70ms; }
+.stagger-3 { animation-delay: 105ms; }
+.stagger-4 { animation-delay: 140ms; }
+.stagger-5 { animation-delay: 175ms; }
+
+/* Reduced Motion Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-shake,
+  .animate-fade-slide-up,
+  .animate-slide-in-right,
+  .animate-slide-in-left,
+  .animate-scale-check,
+  .animate-launch-logo,
+  .animate-aura-pulse,
+  .animate-float-settle,
+  .animate-collapse-out {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+

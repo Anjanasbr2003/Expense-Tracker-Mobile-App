@@ -13,6 +13,8 @@ import { CategoryBreakdownView } from '../components/charts/CategoryBreakdownVie
 import { EmptyState } from '../components/common/EmptyState';
 import { ChevronLeft, ChevronRight, TrendingUp, CalendarDays, Award } from 'lucide-react';
 
+import { AnimatedNumber } from '../components/common/AnimatedNumber';
+
 export const YearlyAnalyticsScreen: React.FC<{ onOpenAddExpense: () => void }> = ({
   onOpenAddExpense,
 }) => {
@@ -21,10 +23,22 @@ export const YearlyAnalyticsScreen: React.FC<{ onOpenAddExpense: () => void }> =
 
   const now = new Date();
   const [selectedYear, setSelectedYear] = useState<number>(now.getFullYear());
+  const [slideDirection, setSlideDirection] = useState<'prev' | 'next' | 'none'>('none');
 
-  const handlePrevYear = () => setSelectedYear((y) => y - 1);
-  const handleNextYear = () => setSelectedYear((y) => y + 1);
-  const handleResetCurrentYear = () => setSelectedYear(now.getFullYear());
+  const handlePrevYear = () => {
+    setSlideDirection('prev');
+    setSelectedYear((y) => y - 1);
+  };
+
+  const handleNextYear = () => {
+    setSlideDirection('next');
+    setSelectedYear((y) => y + 1);
+  };
+
+  const handleResetCurrentYear = () => {
+    setSlideDirection('none');
+    setSelectedYear(now.getFullYear());
+  };
 
   const yearPrefix = `${selectedYear}-`;
   const yearExpenses = useMemo(() => {
@@ -86,83 +100,95 @@ export const YearlyAnalyticsScreen: React.FC<{ onOpenAddExpense: () => void }> =
         </button>
       </div>
 
-      {yearTotal === 0 ? (
-        <EmptyState
-          title="No spending data for this period"
-          description={`You have not logged any expenses in ${selectedYear}.`}
-          actionText="Add Expense"
-          onAction={onOpenAddExpense}
-        />
-      ) : (
-        <>
-          {/* Summary Figures Grid */}
-          <div className="grid grid-cols-2 gap-2.5">
-            {/* Total Annual Spending */}
-            <div className="p-3.5 rounded-2xl glass-panel">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                  Total Spent
-                </span>
-                <div className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-                  <TrendingUp size={13} />
-                </div>
-              </div>
-              <h3 className="text-base sm:text-lg font-bold tabular-nums tracking-tight text-neutral-900 dark:text-white">
-                {formatCurrency(yearTotal, currency.code)}
-              </h3>
-              <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5 font-medium">
-                Full year {selectedYear}
-              </p>
-            </div>
-
-            {/* Monthly Average */}
-            <div className="p-3.5 rounded-2xl glass-panel">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                  Monthly Avg
-                </span>
-                <div className="w-6 h-6 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
-                  <CalendarDays size={13} />
-                </div>
-              </div>
-              <h3 className="text-base sm:text-lg font-bold tabular-nums tracking-tight text-neutral-900 dark:text-white">
-                {formatCurrency(monthlyAverage, currency.code)}
-              </h3>
-              <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5 font-medium">
-                / month average
-              </p>
-            </div>
-          </div>
-
-          {/* Peak Month Callout */}
-          {peakMonth && (
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
-                  <Award size={14} />
-                </div>
-                <div>
-                  <p className="text-[11px] font-bold text-amber-200">
-                    Highest: {peakMonth.monthName} ({formatCurrency(peakMonth.amount, currency.code)})
-                  </p>
-                  <p className="text-[10px] text-amber-400/80">
-                    {peakMonth.count} records logged
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 12-Month Bar Chart */}
-          <MonthlyBarChart points={monthlyPoints} year={selectedYear} />
-
-          {/* Yearly Category Breakdown */}
-          <CategoryBreakdownView
-            breakdown={categoryBreakdown}
-            title={`${selectedYear} Spending by Category`}
+      {/* Year Data Feed with Directional Slide */}
+      <div
+        key={yearPrefix}
+        className={
+          slideDirection === 'next'
+            ? 'animate-slide-in-right space-y-3'
+            : slideDirection === 'prev'
+            ? 'animate-slide-in-left space-y-3'
+            : 'animate-fade-slide-up space-y-3'
+        }
+      >
+        {yearTotal === 0 ? (
+          <EmptyState
+            title="No spending data for this period"
+            description={`You have not logged any expenses in ${selectedYear}.`}
+            actionText="Add Expense"
+            onAction={onOpenAddExpense}
           />
-        </>
-      )}
+        ) : (
+          <>
+            {/* Summary Figures Grid */}
+            <div className="grid grid-cols-2 gap-2.5">
+              {/* Total Annual Spending */}
+              <div className="p-3.5 rounded-2xl glass-panel">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                    Total Spent
+                  </span>
+                  <div className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                    <TrendingUp size={13} />
+                  </div>
+                </div>
+                <h3 className="text-base sm:text-lg font-bold tabular-nums tracking-tight text-neutral-900 dark:text-white">
+                  <AnimatedNumber value={yearTotal} currencyCode={currency.code} />
+                </h3>
+                <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5 font-medium">
+                  Full year {selectedYear}
+                </p>
+              </div>
+
+              {/* Monthly Average */}
+              <div className="p-3.5 rounded-2xl glass-panel">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                    Monthly Avg
+                  </span>
+                  <div className="w-6 h-6 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                    <CalendarDays size={13} />
+                  </div>
+                </div>
+                <h3 className="text-base sm:text-lg font-bold tabular-nums tracking-tight text-neutral-900 dark:text-white">
+                  <AnimatedNumber value={monthlyAverage} currencyCode={currency.code} />
+                </h3>
+                <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5 font-medium">
+                  / month average
+                </p>
+              </div>
+            </div>
+
+            {/* Peak Month Callout */}
+            {peakMonth && (
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                    <Award size={14} />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-amber-200">
+                      Highest: {peakMonth.monthName} ({formatCurrency(peakMonth.amount, currency.code)})
+                    </p>
+                    <p className="text-[10px] text-amber-400/80">
+                      {peakMonth.count} records logged
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 12-Month Bar Chart */}
+            <MonthlyBarChart points={monthlyPoints} year={selectedYear} />
+
+            {/* Yearly Category Breakdown */}
+            <CategoryBreakdownView
+              breakdown={categoryBreakdown}
+              title={`${selectedYear} Spending by Category`}
+            />
+          </>
+        )}
+      </div>
     </div>
   );
 };

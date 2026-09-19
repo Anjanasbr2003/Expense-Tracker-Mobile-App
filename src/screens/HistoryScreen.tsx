@@ -5,8 +5,9 @@ import type { Expense, PaymentMethod, ExpenseSortOption } from '../types';
 import { ExpenseItem } from '../components/expense/ExpenseItem';
 import { EmptyState } from '../components/common/EmptyState';
 import { getDateGroupHeader } from '../utils/dateUtils';
-import { formatCurrency } from '../utils/currency';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
+
+import { AnimatedNumber } from '../components/common/AnimatedNumber';
 
 interface HistoryScreenProps {
   onOpenAddExpense: () => void;
@@ -288,30 +289,35 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
             const headerLabel = getDateGroupHeader(group.date);
 
             return (
-              <div key={group.date} className="space-y-1.5">
+              <div key={group.date} className="space-y-1.5 animate-fade-slide-up">
                 {/* Date Header with Daily Subtotal */}
                 <div className="flex items-center justify-between px-1 py-1 sticky top-0 bg-white dark:bg-black z-10">
                   <h4 className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                     {headerLabel}
                   </h4>
                   <span className="text-xs font-semibold tabular-nums text-neutral-700 dark:text-neutral-300">
-                    {formatCurrency(group.total, currency.code)}
+                    <AnimatedNumber value={group.total} currencyCode={currency.code} />
                   </span>
                 </div>
 
                 {/* Items */}
                 <div className="space-y-1.5">
-                  {group.items.map((item) => {
+                  {group.items.map((item, idx) => {
                     const cat = categories.find((c) => c.id === item.categoryId);
                     return (
-                      <ExpenseItem
+                      <div
                         key={item.id}
-                        expense={item}
-                        category={cat}
-                        onEdit={onEditExpense}
-                        onDelete={onRequestDelete}
-                        showDate={false}
-                      />
+                        className="animate-fade-slide-up"
+                        style={{ animationDelay: `${Math.min((idx + 1) * 35, 200)}ms` }}
+                      >
+                        <ExpenseItem
+                          expense={item}
+                          category={cat}
+                          onEdit={onEditExpense}
+                          onDelete={onRequestDelete}
+                          showDate={false}
+                        />
+                      </div>
                     );
                   })}
                 </div>

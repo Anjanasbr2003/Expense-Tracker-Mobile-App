@@ -31,6 +31,10 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Cash');
   const [note, setNote] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string>('');
+  const [isShaking, setIsShaking] = useState<boolean>(false);
+  const [isAmountFocused, setIsAmountFocused] = useState<boolean>(false);
+  const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+  const [isClosing, setIsClosing] = useState<boolean>(false);
 
   // Custom Category inline state
   const [showAddCategory, setShowAddCategory] = useState<boolean>(false);
@@ -39,6 +43,14 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
   const [newCatColor, setNewCatColor] = useState<string>('#10b981');
 
   const isEditMode = !!initialExpense;
+
+  const triggerClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 180);
+  };
 
   useEffect(() => {
     if (initialExpense) {
@@ -58,22 +70,31 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
       setNote('');
     }
     setErrorMsg('');
+    setIsShaking(false);
+    setSaveSuccess(false);
+    setIsClosing(false);
     setShowAddCategory(false);
   }, [initialExpense, isOpen, categories]);
 
   if (!isOpen) return null;
+
+  const triggerShake = (msg: string) => {
+    setErrorMsg(msg);
+    setIsShaking(true);
+    setTimeout(() => setIsShaking(false), 320);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsedAmount = parseFloat(amountStr);
 
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      setErrorMsg('Please enter a valid amount greater than 0');
+      triggerShake('Please enter a valid amount greater than 0');
       return;
     }
 
     if (!selectedCategoryId) {
-      setErrorMsg('Please select a category');
+      triggerShake('Please select a category');
       return;
     }
 
@@ -97,9 +118,12 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
           note: note.trim(),
         });
       }
-      onClose();
+      setSaveSuccess(true);
+      setTimeout(() => {
+        triggerClose();
+      }, 360);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to save expense');
+      triggerShake(err.message || 'Failed to save expense');
     }
   };
 
@@ -136,9 +160,19 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 animate-in fade-in duration-150">
+    <div
+      onClick={triggerClose}
+      className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 transition-opacity duration-200 ${
+        isClosing ? 'opacity-0' : 'animate-in fade-in duration-150'
+      }`}
+    >
       <div
-        className="w-full max-w-md max-h-[88%] sm:max-h-[90%] flex flex-col glass-panel rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-150"
+        onClick={(e) => e.stopPropagation()}
+        className={`w-full max-w-md max-h-[88%] sm:max-h-[90%] flex flex-col glass-panel rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl transition-transform duration-200 ${
+          isClosing
+            ? 'translate-y-full opacity-0'
+            : 'animate-in slide-in-from-bottom duration-200'
+        }`}
         role="dialog"
         aria-modal="true"
       >
@@ -161,7 +195,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
             )}
             <button
               type="button"
-              onClick={onClose}
+              onClick={triggerClose}
               className="w-8 h-8 rounded-xl glass-button text-neutral-400 hover:text-neutral-200 flex items-center justify-center active:scale-90 transition-all cursor-pointer"
             >
               <X size={17} />
@@ -172,7 +206,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
         {/* Modal Content */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
           {errorMsg && (
-            <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-xs font-semibold">
+            <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-xs font-semibold animate-fade-slide-up">
               {errorMsg}
             </div>
           )}
@@ -182,7 +216,15 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
             <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5">
               Amount
             </label>
-            <div className="relative flex items-center rounded-2xl glass-panel focus-within:border-emerald-500/60 px-3.5 py-2.5 transition-colors">
+            <div
+              className={`relative flex items-center rounded-2xl glass-panel px-3.5 py-2.5 transition-all duration-200 ${
+                isShaking ? 'animate-shake border-rose-500/80 ring-2 ring-rose-500/30' : ''
+              } ${
+                isAmountFocused
+                  ? 'scale-[1.01] border-emerald-500/80 shadow-[0_0_16px_rgba(16,185,129,0.2)]'
+                  : 'border-neutral-200/80 dark:border-white/[0.08]'
+              }`}
+            >
               <span className="text-xl font-bold text-neutral-400 mr-2 select-none">
                 {currency.symbol}
               </span>
@@ -192,7 +234,12 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                 min="0.01"
                 placeholder="0.00"
                 value={amountStr}
-                onChange={(e) => setAmountStr(e.target.value)}
+                onFocus={() => setIsAmountFocused(true)}
+                onBlur={() => setIsAmountFocused(false)}
+                onChange={(e) => {
+                  setAmountStr(e.target.value);
+                  if (errorMsg) setErrorMsg('');
+                }}
                 className="w-full text-2xl font-bold tabular-nums text-neutral-900 dark:text-neutral-50 bg-transparent outline-hidden tracking-tight"
                 required
               />
@@ -203,7 +250,10 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                 <button
                   key={amt}
                   type="button"
-                  onClick={() => setAmountStr(amt.toString())}
+                  onClick={() => {
+                    setAmountStr(amt.toString());
+                    if (errorMsg) setErrorMsg('');
+                  }}
                   className="px-3.5 py-1.5 text-xs font-bold tabular-nums rounded-xl glass-button text-neutral-800 dark:text-neutral-200 active:scale-95 transition-all cursor-pointer shrink-0"
                 >
                   +{amt}
@@ -278,15 +328,20 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                   <button
                     key={cat.id}
                     type="button"
-                    onClick={() => setSelectedCategoryId(cat.id)}
-                    className={`flex items-center gap-2 p-2.5 rounded-2xl text-left border transition-all active:scale-95 cursor-pointer ${
+                    onClick={() => {
+                      setSelectedCategoryId(cat.id);
+                      if (errorMsg) setErrorMsg('');
+                    }}
+                    className={`relative flex items-center gap-2 p-2.5 rounded-2xl text-left border transition-all duration-200 active:scale-95 cursor-pointer ${
                       isSelected
-                        ? 'border-emerald-500 bg-emerald-500/15 text-emerald-400 font-bold shadow-xs'
+                        ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400 font-bold shadow-xs'
                         : 'glass-button text-neutral-700 dark:text-neutral-300'
                     }`}
                   >
                     <div
-                      className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 shadow-xs"
+                      className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 shadow-xs transition-transform duration-200 ${
+                        isSelected ? 'scale-110' : ''
+                      }`}
                       style={{
                         backgroundColor: `${cat.color}25`,
                         color: cat.color,
@@ -295,6 +350,12 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                       <CategoryIcon name={cat.icon} size={13} />
                     </div>
                     <span className="text-[11px] truncate font-semibold">{cat.name}</span>
+
+                    {isSelected && (
+                      <div className="absolute top-1.5 right-1.5 w-3.5 h-3.5 rounded-full bg-emerald-500 text-black flex items-center justify-center animate-scale-check">
+                        <Check size={9} strokeWidth={3} />
+                      </div>
+                    )}
                   </button>
                 );
               })}
@@ -366,9 +427,9 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                     key={method}
                     type="button"
                     onClick={() => setPaymentMethod(method)}
-                    className={`py-2 px-2 rounded-2xl text-[11px] font-bold border text-center transition-all active:scale-95 cursor-pointer ${
+                    className={`py-2 px-2 rounded-2xl text-[11px] font-bold border text-center transition-all duration-200 active:scale-95 cursor-pointer ${
                       isSelected
-                        ? 'border-emerald-500 bg-emerald-500/15 text-emerald-400'
+                        ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400 scale-[1.02] shadow-xs'
                         : 'glass-button text-neutral-600 dark:text-neutral-300'
                     }`}
                   >
@@ -400,10 +461,23 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
           <button
             type="button"
             onClick={handleSubmit}
-            className="w-full h-12 py-3 px-5 rounded-2xl glass-button-primary text-black font-bold text-sm shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className={`w-full h-12 py-3 px-5 rounded-2xl font-bold text-sm shadow-md active:scale-[0.97] transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer ${
+              saveSuccess
+                ? 'bg-emerald-400 text-black scale-[1.01]'
+                : 'glass-button-primary text-black'
+            }`}
           >
-            <Check size={18} strokeWidth={2.6} />
-            <span>{isEditMode ? 'Update Expense' : 'Save Expense'}</span>
+            {saveSuccess ? (
+              <div className="flex items-center gap-2 animate-scale-check">
+                <Check size={18} strokeWidth={3} />
+                <span>{isEditMode ? 'Expense Updated!' : 'Expense Added!'}</span>
+              </div>
+            ) : (
+              <>
+                <Check size={18} strokeWidth={2.6} />
+                <span>{isEditMode ? 'Update Expense' : 'Save Expense'}</span>
+              </>
+            )}
           </button>
         </div>
       </div>

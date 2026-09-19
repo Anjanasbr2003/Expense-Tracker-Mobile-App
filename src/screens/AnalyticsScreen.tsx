@@ -38,7 +38,7 @@ export const AnalyticsScreen: React.FC<{ onOpenAddExpense: () => void }> = ({
       </div>
 
       {/* View Container */}
-      <div className="flex-1 flex flex-col overflow-y-auto">
+      <div key={subTab} className="flex-1 flex flex-col overflow-y-auto animate-fade-slide-up">
         {subTab === 'monthly' ? (
           <MonthlyAnalyticsScreen onOpenAddExpense={onOpenAddExpense} />
         ) : (

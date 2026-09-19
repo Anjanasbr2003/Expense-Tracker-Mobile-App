@@ -12,6 +12,7 @@ interface ExpenseItemProps {
   onEdit: (expense: Expense) => void;
   onDelete?: (expense: Expense) => void;
   showDate?: boolean;
+  isDeleting?: boolean;
 }
 
 export const ExpenseItem: React.FC<ExpenseItemProps> = ({
@@ -20,6 +21,7 @@ export const ExpenseItem: React.FC<ExpenseItemProps> = ({
   onEdit,
   onDelete,
   showDate = true,
+  isDeleting = false,
 }) => {
   const { currency } = useSettings();
 
@@ -43,7 +45,9 @@ export const ExpenseItem: React.FC<ExpenseItemProps> = ({
   return (
     <div
       onClick={() => onEdit(expense)}
-      className="group flex items-center justify-between p-2.5 rounded-2xl glass-button active:scale-[0.98] transition-all cursor-pointer select-none"
+      className={`group flex items-center justify-between p-2.5 rounded-2xl glass-button active:scale-[0.98] transition-all duration-150 cursor-pointer select-none ${
+        isDeleting ? 'animate-collapse-out pointer-events-none' : ''
+      }`}
     >
       {/* Left: Icon & Details */}
       <div className="flex items-center gap-2.5 min-w-0 pr-2">

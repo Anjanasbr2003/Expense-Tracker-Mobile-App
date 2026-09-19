@@ -16,8 +16,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   icon: Icon = Receipt,
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center p-6 text-center my-3">
-      <div className="w-14 h-14 rounded-2xl glass-panel flex items-center justify-center text-neutral-400 mb-3 shadow-xs">
+    <div className="flex flex-col items-center justify-center p-6 text-center my-3 animate-fade-slide-up">
+      <div className="w-14 h-14 rounded-2xl glass-panel flex items-center justify-center text-neutral-400 mb-3 shadow-xs animate-float-settle">
         <Icon size={24} strokeWidth={1.75} />
       </div>
       <h3 className="text-sm font-bold text-neutral-900 dark:text-white mb-1">
