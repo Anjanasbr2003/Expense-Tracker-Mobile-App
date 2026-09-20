@@ -91,7 +91,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({ spentAmount }) => {
           <input
             type="number"
             min="0"
-            step="100"
+            step="any"
             value={budgetString}
             onChange={(e) => setBudgetString(e.target.value)}
             className="w-full text-xs font-bold tabular-nums text-neutral-900 dark:text-white bg-transparent outline-hidden"

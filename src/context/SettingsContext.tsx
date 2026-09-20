@@ -9,6 +9,8 @@ interface SettingsContextValue {
   setCurrencyCode: (code: string) => Promise<void>;
   setTheme: (theme: ThemeMode) => Promise<void>;
   setMonthlyBudget: (amount: number) => Promise<void>;
+  setUserName: (name: string) => Promise<void>;
+  completeOnboarding: (name: string, monthlyBudget: number, currencyCode?: string) => Promise<void>;
   isDark: boolean;
 }
 
@@ -125,6 +127,22 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     await persistSettings(updated);
   };
 
+  const setUserName = async (name: string) => {
+    const updated = { ...settings, userName: name.trim() };
+    await persistSettings(updated);
+  };
+
+  const completeOnboarding = async (name: string, monthlyBudget: number, currencyCode?: string) => {
+    const updated: AppSettings = {
+      ...settings,
+      userName: name.trim(),
+      defaultMonthlyBudget: monthlyBudget,
+      currencyCode: currencyCode || settings.currencyCode,
+      hasCompletedOnboarding: true,
+    };
+    await persistSettings(updated);
+  };
+
   const currency = getCurrencyConfig(settings.currencyCode);
 
   return (
@@ -135,6 +153,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setCurrencyCode,
         setTheme,
         setMonthlyBudget,
+        setUserName,
+        completeOnboarding,
         isDark,
       }}
     >

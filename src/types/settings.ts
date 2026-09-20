@@ -13,6 +13,8 @@ export interface AppSettings {
   theme: ThemeMode;
   defaultMonthlyBudget?: number;
   hasLoadedInitialData: boolean;
+  userName?: string;
+  hasCompletedOnboarding?: boolean;
 }
 
 export const SUPPORTED_CURRENCIES: Record<string, CurrencyConfig> = {

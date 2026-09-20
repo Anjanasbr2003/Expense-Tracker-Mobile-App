@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AlertTriangle, Trash2, X } from 'lucide-react';
+import { hapticWarning, hapticHeavy } from '../../utils/haptics';
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -24,6 +25,12 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 }) => {
   const [isClosing, setIsClosing] = useState(false);
 
+  useEffect(() => {
+    if (isOpen) {
+      hapticWarning();
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleClose = () => {
@@ -35,6 +42,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   };
 
   const handleConfirmAction = () => {
+    hapticHeavy();
     setIsClosing(true);
     setTimeout(() => {
       setIsClosing(false);

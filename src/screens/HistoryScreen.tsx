@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useExpenses } from '../context/ExpenseContext';
 import { useSettings } from '../context/SettingsContext';
-import type { Expense, PaymentMethod, ExpenseSortOption } from '../types';
+import type { Expense, PaymentMethod, ExpenseSortOption, Category } from '../types';
 import { ExpenseItem } from '../components/expense/ExpenseItem';
 import { EmptyState } from '../components/common/EmptyState';
 import { SpendingFootprintCard } from '../components/charts/SpendingFootprintCard';
@@ -30,6 +30,13 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
   const [sortBy, setSortBy] = useState<ExpenseSortOption>('newest');
   const [showFilters, setShowFilters] = useState<boolean>(false);
 
+  // Fast O(1) Category Map
+  const fullCategoryMap = useMemo(() => {
+    const map = new Map<string, Category>();
+    categories.forEach((c) => map.set(c.id, c));
+    return map;
+  }, [categories]);
+
   // Filtered & Sorted Expenses
   const filteredExpenses = useMemo(() => {
     const now = new Date();
@@ -40,13 +47,10 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
     const lastMonthDate = new Date(currentYear, currentMonth - 2, 1);
     const lastMonthPrefix = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, '0')}`;
 
-    const categoryMap = new Map<string, string>();
-    categories.forEach((c) => categoryMap.set(c.id, c.name.toLowerCase()));
-
     return expenses.filter((exp) => {
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim();
-        const catName = categoryMap.get(exp.categoryId) || '';
+        const catName = fullCategoryMap.get(exp.categoryId)?.name.toLowerCase() || '';
         const note = (exp.note || '').toLowerCase();
         const payment = exp.paymentMethod.toLowerCase();
         const amountStr = exp.amount.toString();
@@ -92,7 +96,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
       }
       return 0;
     });
-  }, [expenses, categories, searchQuery, selectedCategory, selectedPayment, selectedTimeRange, sortBy]);
+  }, [expenses, fullCategoryMap, searchQuery, selectedCategory, selectedPayment, selectedTimeRange, sortBy]);
 
   // Group by date
   const groupedExpenses = useMemo(() => {
@@ -298,11 +302,11 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
             return (
               <div key={group.date} className="space-y-1.5 animate-fade-slide-up">
                 {/* Date Header with Daily Subtotal */}
-                <div className="flex items-center justify-between px-1 py-1 sticky top-0 bg-[#030805]/80 backdrop-blur-md z-10">
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-emerald-300/80">
+                <div className="flex items-center justify-between px-1 py-1 sticky top-0 bg-slate-50/90 dark:bg-[#030805]/85 backdrop-blur-md z-10">
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300/80">
                     {headerLabel}
                   </h4>
-                  <span className="text-xs font-semibold tabular-nums text-neutral-300">
+                  <span className="text-xs font-semibold tabular-nums text-neutral-700 dark:text-neutral-300">
                     <AnimatedNumber value={group.total} currencyCode={currency.code} />
                   </span>
                 </div>
@@ -310,12 +314,16 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
                 {/* Items */}
                 <div className="space-y-1.5">
                   {group.items.map((item, idx) => {
-                    const cat = categories.find((c) => c.id === item.categoryId);
+                    const cat = fullCategoryMap.get(item.categoryId);
                     return (
                       <div
                         key={item.id}
-                        className="animate-fade-slide-up"
-                        style={{ animationDelay: `${Math.min((idx + 1) * 35, 200)}ms` }}
+                        className={idx < 8 ? 'animate-fade-slide-up' : ''}
+                        style={{
+                          contentVisibility: 'auto',
+                          containIntrinsicSize: '0 68px',
+                          animationDelay: idx < 8 ? `${Math.min((idx + 1) * 35, 200)}ms` : undefined,
+                        }}
                       >
                         <ExpenseItem
                           expense={item}

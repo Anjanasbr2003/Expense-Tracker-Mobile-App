@@ -166,4 +166,29 @@ describe('Expense Calculation Engine', () => {
     expect(zeroStatus.isOverBudget).toBe(false);
     expect(zeroStatus.percentageUsed).toBe(0);
   });
+
+  it('correctly aggregates daily expenses for calendar tracking', () => {
+    const calendarExpenses: Expense[] = [
+      { id: '1', amount: 1500, categoryId: 'cat-food', date: '2026-09-18', paymentMethod: 'Cash', createdAt: 1, updatedAt: 1 },
+      { id: '2', amount: 2500, categoryId: 'cat-bills', date: '2026-09-18', paymentMethod: 'Card', createdAt: 2, updatedAt: 2 },
+      { id: '3', amount: 800, categoryId: 'cat-transport', date: '2026-09-19', paymentMethod: 'Cash', createdAt: 3, updatedAt: 3 },
+    ];
+
+    const map: Record<string, { total: number; count: number; items: Expense[] }> = {};
+    for (const exp of calendarExpenses) {
+      if (!map[exp.date]) {
+        map[exp.date] = { total: 0, count: 0, items: [] };
+      }
+      map[exp.date].total += exp.amount;
+      map[exp.date].count += 1;
+      map[exp.date].items.push(exp);
+    }
+
+    expect(map['2026-09-18'].total).toBe(4000);
+    expect(map['2026-09-18'].count).toBe(2);
+    expect(map['2026-09-19'].total).toBe(800);
+    expect(map['2026-09-19'].count).toBe(1);
+    expect(map['2026-09-20']).toBeUndefined();
+  });
 });
+
