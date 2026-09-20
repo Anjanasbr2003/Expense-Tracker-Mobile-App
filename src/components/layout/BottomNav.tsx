@@ -101,15 +101,15 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         </button>
 
         {/* Center Quick Add Action Button (Apple Glass Floating Orb) */}
-        <div className="relative z-30 flex items-center justify-center px-1 -mt-3">
+        <div className="relative z-30 flex items-center justify-center mx-2.5 shrink-0 -mt-3">
           <button
             type="button"
             onClick={handleQuickAdd}
-            className="w-13 h-13 rounded-2xl glass-button-primary text-black font-black flex items-center justify-center active:scale-90 active:ring-4 active:ring-lime-400/40 transition-all duration-150 cursor-pointer shadow-lg shadow-emerald-950/40"
+            className="w-12 h-12 rounded-2xl glass-button-primary text-black font-black flex items-center justify-center active:scale-90 active:ring-4 active:ring-lime-400/40 transition-all duration-150 cursor-pointer shadow-lg shadow-emerald-950/40"
             aria-label="Add Expense"
             title="Add Expense"
           >
-            <Plus size={26} strokeWidth={2.8} />
+            <Plus size={24} strokeWidth={2.8} />
           </button>
         </div>
 

@@ -4,16 +4,13 @@ const config: CapacitorConfig = {
   appId: 'com.spendwise.expensetracker',
   appName: 'SpendWise',
   webDir: 'dist',
+  backgroundColor: '#030805',
   server: {
     androidScheme: 'https',
   },
   android: {
     allowMixedContent: true,
-  },
-  plugins: {
-    SystemBars: {
-      insetsHandling: 'disable',
-    },
+    backgroundColor: '#030805',
   },
 };
 

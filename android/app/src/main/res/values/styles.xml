@@ -10,17 +10,24 @@
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
-        <item name="android:background">#000000</item>
-        <item name="android:windowBackground">#000000</item>
-        <item name="android:statusBarColor">#000000</item>
+        <item name="android:background">#030805</item>
+        <item name="android:windowBackground">#030805</item>
+        <item name="android:statusBarColor">#030805</item>
         <item name="android:navigationBarColor">#000000</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <item name="android:background">#000000</item>
-        <item name="android:windowBackground">#000000</item>
-        <item name="android:statusBarColor">#000000</item>
+        <!-- Android 12+ SplashScreen Attributes -->
+        <item name="windowSplashScreenBackground">#030805</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_adaptive_fg</item>
+        <item name="windowSplashScreenIconBackgroundColor">#030805</item>
+
+        <!-- Standard Window Fallbacks -->
+        <item name="android:background">#030805</item>
+        <item name="android:windowBackground">#030805</item>
+        <item name="android:statusBarColor">#030805</item>
         <item name="android:navigationBarColor">#000000</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>
 </resources>

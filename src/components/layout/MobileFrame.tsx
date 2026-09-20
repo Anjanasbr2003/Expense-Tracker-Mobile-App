@@ -9,7 +9,7 @@ export const MobileFrame: React.FC<MobileFrameProps> = ({ children }) => {
   const [showDeviceFrame, setShowDeviceFrame] = useState<boolean>(false);
 
   return (
-    <div className="h-full w-full bg-[#020503] flex flex-col items-center justify-center overflow-hidden selection:bg-lime-400 selection:text-black">
+    <div className="h-full w-full bg-[#030805] flex flex-col items-center justify-start sm:justify-center overflow-hidden selection:bg-lime-400 selection:text-black">
       {/* Desktop Helper Bar (visible only on large desktop screens) */}
       <div className="hidden sm:flex items-center justify-between w-full max-w-md px-3 py-1.5 text-xs text-emerald-400/80">
         <div className="flex items-center gap-1.5 font-medium">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SettingsProvider, useSettings } from './context/SettingsContext';
 import { ExpenseProvider, useExpenses } from './context/ExpenseContext';
 import { BottomNav, type TabType } from './components/layout/BottomNav';
@@ -11,17 +11,51 @@ import { SettingsScreen } from './screens/SettingsScreen';
 import { ExpenseFormModal } from './components/expense/ExpenseFormModal';
 import { ConfirmModal } from './components/common/ConfirmModal';
 import { OnboardingModal } from './components/common/OnboardingModal';
+import { MonthlyBudgetPromptModal } from './components/budget/MonthlyBudgetPromptModal';
+import { syncWidgetMetrics } from './utils/widgetSync';
 import type { Expense } from './types';
 
 const MainApp: React.FC = () => {
-  const { settings, currency } = useSettings();
+  const { settings, currency, currentMonthBudget, shouldPromptMonthlyBudget } = useSettings();
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
+  const [isManualMonthlyPromptOpen, setIsManualMonthlyPromptOpen] = useState<boolean>(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [initialFormDate, setInitialFormDate] = useState<string | undefined>();
   const [deletingExpense, setDeletingExpense] = useState<Expense | null>(null);
 
-  const { deleteExpense } = useExpenses();
+  const { deleteExpense, todayTotal, thisMonthTotal } = useExpenses();
+
+  // Synchronize live metrics with Android Home Screen Widgets
+  useEffect(() => {
+    syncWidgetMetrics(todayTotal, thisMonthTotal, currentMonthBudget || 50000, currency.symbol);
+  }, [todayTotal, thisMonthTotal, currentMonthBudget, currency.symbol]);
+
+  // Handle widget shortcut events from Android home screen widgets
+  useEffect(() => {
+    const handleWidgetShortcut = (event: any) => {
+      const action = event.detail?.action;
+      if (action === 'add' || action === 'add_food' || action === 'add_transport') {
+        setSelectedExpense(null);
+        setInitialFormDate(undefined);
+        setIsFormOpen(true);
+      } else if (action === 'history') {
+        setActiveTab('history');
+      }
+    };
+
+    window.addEventListener('spendwise_widget_shortcut', handleWidgetShortcut);
+
+    const handleOpenMonthlyBudgetPrompt = () => {
+      setIsManualMonthlyPromptOpen(true);
+    };
+    window.addEventListener('open_monthly_budget_prompt', handleOpenMonthlyBudgetPrompt);
+
+    return () => {
+      window.removeEventListener('spendwise_widget_shortcut', handleWidgetShortcut);
+      window.removeEventListener('open_monthly_budget_prompt', handleOpenMonthlyBudgetPrompt);
+    };
+  }, []);
 
   const handleOpenAdd = (date?: string) => {
     setSelectedExpense(null);
@@ -170,6 +204,14 @@ const MainApp: React.FC = () => {
       {/* First-Time Onboarding Modal (Shown only on first launch) */}
       {!settings.hasCompletedOnboarding && (
         <OnboardingModal onComplete={() => {}} />
+      )}
+
+      {/* 1st of the Month Budget Planning Prompt Modal */}
+      {settings.hasCompletedOnboarding && (
+        <MonthlyBudgetPromptModal
+          isOpen={shouldPromptMonthlyBudget || isManualMonthlyPromptOpen}
+          onClose={() => setIsManualMonthlyPromptOpen(false)}
+        />
       )}
     </>
   );

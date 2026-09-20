@@ -15,6 +15,7 @@ export interface AppSettings {
   hasLoadedInitialData: boolean;
   userName?: string;
   hasCompletedOnboarding?: boolean;
+  lastBudgetPromptMonth?: string;
 }
 
 export const SUPPORTED_CURRENCIES: Record<string, CurrencyConfig> = {

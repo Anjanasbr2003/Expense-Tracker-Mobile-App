@@ -71,7 +71,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   }, [expenses, categories]);
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-3.5 overflow-y-auto no-scrollbar select-none gap-3">
+    <div className="flex-1 flex flex-col p-3.5 overflow-y-auto no-scrollbar select-none gap-3 pb-8">
       {/* 1. Fluid Liquid Glass Segmented Control Track */}
       <div className="p-1 rounded-2xl glass-panel border border-lime-400/20 dark:border-white/[0.08] backdrop-blur-xl flex items-center gap-1 shrink-0 bg-neutral-200/50 dark:bg-black/40 shadow-xs">
         <button
@@ -297,7 +297,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
       </div>
 
       {/* 5. Daily Filtered or Recent Transactions List */}
-      <div className="flex-1 flex flex-col justify-end min-h-0">
+      <div className="shrink-0 space-y-1.5 pt-1">
         <div className="flex items-center justify-between mb-2 px-1">
           <div className="flex items-center gap-1.5">
             {selectedDate ? (

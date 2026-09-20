@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark Mode Launcher Icon Colors -->
+    <color name="ic_launcher_background">#030805</color>
+    <color name="ic_launcher_bg_color">#030805</color>
+    <color name="ic_launcher_bg_ring">#133E2B</color>
+    <color name="ic_launcher_card_fill">#061C11</color>
+    <color name="ic_launcher_wallet_body">#061C11</color>
+    <color name="ic_launcher_wallet_stroke">#A3E635</color>
+    <color name="ic_launcher_wallet_fold">#10B981</color>
+    <color name="ic_launcher_wallet_flap">#0B2E1B</color>
+    <color name="ic_launcher_wallet_flap_stroke">#22C55E</color>
+    <color name="ic_launcher_wallet_clasp">#BEF264</color>
+    <color name="ic_launcher_wallet_card">#22C55E</color>
+</resources>

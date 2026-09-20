@@ -36,6 +36,45 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+
+        <!-- Widget 1: Daily Glance Widget -->
+        <receiver
+            android:name=".SpendWiseGlanceWidget"
+            android:exported="true"
+            android:label="@string/widget_glance_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_glance_info" />
+        </receiver>
+
+        <!-- Widget 2: Budget Pulse Widget -->
+        <receiver
+            android:name=".SpendWiseBudgetWidget"
+            android:exported="true"
+            android:label="@string/widget_budget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_budget_info" />
+        </receiver>
+
+        <!-- Widget 3: Quick Action Dock Widget -->
+        <receiver
+            android:name=".SpendWiseQuickBarWidget"
+            android:exported="true"
+            android:label="@string/widget_quick_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_quick_bar_info" />
+        </receiver>
     </application>
 
     <!-- Permissions -->
