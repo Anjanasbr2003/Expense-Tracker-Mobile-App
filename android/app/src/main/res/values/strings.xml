@@ -4,4 +4,7 @@
     <string name="title_activity_main">SpendWise</string>
     <string name="package_name">com.spendwise.expensetracker</string>
     <string name="custom_url_scheme">com.spendwise.expensetracker</string>
+    <string name="widget_glance_name">SpendWise - Daily Glance</string>
+    <string name="widget_budget_name">SpendWise - Budget Pulse</string>
+    <string name="widget_quick_name">SpendWise - Quick Action Dock</string>
 </resources>

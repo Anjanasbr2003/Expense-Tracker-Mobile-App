@@ -32,6 +32,14 @@ export async function initializeDatabase(): Promise<void> {
   const catCount = await db.categories.count();
   if (catCount === 0) {
     await db.categories.bulkAdd(DEFAULT_CATEGORIES);
+  } else {
+    // Seamlessly backfill any new default categories for existing user databases
+    for (const cat of DEFAULT_CATEGORIES) {
+      const existing = await db.categories.get(cat.id);
+      if (!existing) {
+        await db.categories.put(cat);
+      }
+    }
   }
 
   // Ensure initial settings record exists

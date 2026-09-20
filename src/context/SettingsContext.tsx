@@ -6,11 +6,20 @@ import { db, initializeDatabase } from '../db/database';
 interface SettingsContextValue {
   settings: AppSettings;
   currency: CurrencyConfig;
+  currentMonthBudget: number;
   setCurrencyCode: (code: string) => Promise<void>;
   setTheme: (theme: ThemeMode) => Promise<void>;
   setMonthlyBudget: (amount: number) => Promise<void>;
+  updateMonthBudget: (
+    amount: number,
+    targetYear?: number,
+    targetMonth?: number,
+    setAsDefault?: boolean
+  ) => Promise<void>;
   setUserName: (name: string) => Promise<void>;
   completeOnboarding: (name: string, monthlyBudget: number, currencyCode?: string) => Promise<void>;
+  shouldPromptMonthlyBudget: boolean;
+  dismissMonthlyBudgetPrompt: () => Promise<void>;
   isDark: boolean;
 }
 
@@ -35,12 +44,16 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return defaultSettings;
   });
 
+  const [currentMonthBudget, setCurrentMonthBudget] = useState<number>(
+    settings.defaultMonthlyBudget || 60000
+  );
+
   const [isDark, setIsDark] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
-  // Load persisted settings from Dexie on mount
+  // Load persisted settings & active month budget from Dexie on mount
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -50,8 +63,31 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (record && record.value && mounted) {
           setSettings(record.value);
         }
+
+        const now = new Date();
+        const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const budgetRecord = await db.budgets.get(currentMonthKey);
+
+        if (budgetRecord && budgetRecord.amount > 0 && mounted) {
+          setCurrentMonthBudget(budgetRecord.amount);
+        } else {
+          const fallback =
+            record?.value?.defaultMonthlyBudget || settings.defaultMonthlyBudget || 60000;
+          if (mounted) {
+            setCurrentMonthBudget(fallback);
+          }
+          if (record?.value?.hasCompletedOnboarding) {
+            await db.budgets.put({
+              id: currentMonthKey,
+              year: now.getFullYear(),
+              month: now.getMonth() + 1,
+              amount: fallback,
+              updatedAt: Date.now(),
+            });
+          }
+        }
       } catch (err) {
-        console.error('Failed to load settings from DB:', err);
+        console.error('Failed to load settings/budgets from DB:', err);
       }
     })();
     return () => {
@@ -77,8 +113,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setIsDark(darkActive);
       if (darkActive) {
         root.classList.add('dark');
+        root.style.backgroundColor = '#030805';
+        root.style.colorScheme = 'dark';
       } else {
         root.classList.remove('dark');
+        root.style.backgroundColor = '#f8fafc';
+        root.style.colorScheme = 'light';
       }
     };
 
@@ -113,8 +153,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     if (darkActive) {
       root.classList.add('dark');
+      root.style.backgroundColor = '#030805';
+      root.style.colorScheme = 'dark';
     } else {
       root.classList.remove('dark');
+      root.style.backgroundColor = '#f8fafc';
+      root.style.colorScheme = 'light';
     }
     setIsDark(darkActive);
 
@@ -123,7 +167,49 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const setMonthlyBudget = async (amount: number) => {
+    const now = new Date();
+    const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     const updated = { ...settings, defaultMonthlyBudget: amount };
+    await persistSettings(updated);
+    await db.budgets.put({
+      id: currentMonthKey,
+      year: now.getFullYear(),
+      month: now.getMonth() + 1,
+      amount,
+      updatedAt: Date.now(),
+    });
+    setCurrentMonthBudget(amount);
+  };
+
+  const updateMonthBudget = async (
+    amount: number,
+    targetYear?: number,
+    targetMonth?: number,
+    setAsDefault?: boolean
+  ) => {
+    const now = new Date();
+    const y = targetYear ?? now.getFullYear();
+    const m = targetMonth ?? now.getMonth() + 1;
+    const monthKey = `${y}-${String(m).padStart(2, '0')}`;
+
+    await db.budgets.put({
+      id: monthKey,
+      year: y,
+      month: m,
+      amount,
+      updatedAt: Date.now(),
+    });
+
+    const isCurrentMonth = y === now.getFullYear() && m === now.getMonth() + 1;
+    if (isCurrentMonth) {
+      setCurrentMonthBudget(amount);
+    }
+
+    const updated: AppSettings = {
+      ...settings,
+      lastBudgetPromptMonth: monthKey,
+      ...(setAsDefault ? { defaultMonthlyBudget: amount } : {}),
+    };
     await persistSettings(updated);
   };
 
@@ -133,13 +219,47 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const completeOnboarding = async (name: string, monthlyBudget: number, currencyCode?: string) => {
+    const now = new Date();
+    const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     const updated: AppSettings = {
       ...settings,
       userName: name.trim(),
       defaultMonthlyBudget: monthlyBudget,
       currencyCode: currencyCode || settings.currencyCode,
       hasCompletedOnboarding: true,
+      lastBudgetPromptMonth: currentMonthKey,
     };
+    await persistSettings(updated);
+
+    // Save as this month's budget in Dexie
+    await db.budgets.put({
+      id: currentMonthKey,
+      year: now.getFullYear(),
+      month: now.getMonth() + 1,
+      amount: monthlyBudget,
+      updatedAt: Date.now(),
+    });
+    setCurrentMonthBudget(monthlyBudget);
+  };
+
+  // Should prompt user on the 1st day of every month (or first launch of a new month) if not yet answered for this month
+  const shouldPromptMonthlyBudget = Boolean(
+    settings.hasCompletedOnboarding &&
+      (() => {
+        const now = new Date();
+        const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        // If already prompted or budget confirmed for this month, do not prompt again
+        if (settings.lastBudgetPromptMonth === currentMonthKey) {
+          return false;
+        }
+        return true;
+      })()
+  );
+
+  const dismissMonthlyBudgetPrompt = async () => {
+    const now = new Date();
+    const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const updated = { ...settings, lastBudgetPromptMonth: currentMonthKey };
     await persistSettings(updated);
   };
 
@@ -150,11 +270,15 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       value={{
         settings,
         currency,
+        currentMonthBudget,
         setCurrencyCode,
         setTheme,
         setMonthlyBudget,
+        updateMonthBudget,
         setUserName,
         completeOnboarding,
+        shouldPromptMonthlyBudget,
+        dismissMonthlyBudgetPrompt,
         isDark,
       }}
     >

@@ -10,10 +10,10 @@ interface RateBreakdownViewProps {
 }
 
 export const RateBreakdownView: React.FC<RateBreakdownViewProps> = () => {
-  const { currency, settings } = useSettings();
+  const { currency, settings, currentMonthBudget } = useSettings();
   const { expenses, categories, thisMonthTotal } = useExpenses();
 
-  const monthlyBudget = settings.defaultMonthlyBudget || 60000;
+  const monthlyBudget = currentMonthBudget || settings.defaultMonthlyBudget || 60000;
 
   // Compute breakdown and category insights
   const {

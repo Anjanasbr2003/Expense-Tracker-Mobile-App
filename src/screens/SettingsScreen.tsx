@@ -2,7 +2,8 @@ import React, { useState, useRef } from 'react';
 import { useSettings } from '../context/SettingsContext';
 import { useExpenses } from '../context/ExpenseContext';
 import { SUPPORTED_CURRENCIES, type ThemeMode } from '../types';
-import { CategoryIcon, AVAILABLE_CATEGORY_ICONS } from '../components/common/CategoryIcon';
+import { CategoryIcon } from '../components/common/CategoryIcon';
+import { IconPicker } from '../components/common/IconPicker';
 import { ConfirmModal } from '../components/common/ConfirmModal';
 import { exportExpensesToCSV, exportAllDataToJSON, importDataFromJSON } from '../utils/exportImport';
 import {
@@ -18,11 +19,22 @@ import {
   Check,
   AlertOctagon,
   User,
+  Calendar,
+  CalendarClock,
 } from 'lucide-react';
 import { executeThemeTransition } from '../utils/themeTransition';
 
 export const SettingsScreen: React.FC = () => {
-  const { settings, currency, setCurrencyCode, setTheme, setMonthlyBudget, setUserName } = useSettings();
+  const {
+    settings,
+    currency,
+    currentMonthBudget,
+    setCurrencyCode,
+    setTheme,
+    setMonthlyBudget,
+    updateMonthBudget,
+    setUserName,
+  } = useSettings();
   const {
     expenses,
     categories,
@@ -31,7 +43,6 @@ export const SettingsScreen: React.FC = () => {
     clearAllData,
     addCategory,
     deleteCategory,
-    refreshData,
   } = useExpenses();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -42,6 +53,15 @@ export const SettingsScreen: React.FC = () => {
 
   const [userNameInput, setUserNameInput] = useState<string>(settings.userName || '');
   const [isSavingName, setIsSavingName] = useState<boolean>(false);
+
+  const now = new Date();
+  const currentMonthName = now.toLocaleDateString('en-US', { month: 'long' });
+  const currentYear = now.getFullYear();
+
+  const [thisMonthBudgetValue, setThisMonthBudgetValue] = useState<string>(
+    (currentMonthBudget || settings.defaultMonthlyBudget || 60000).toString()
+  );
+  const [isSavingThisMonthBudget, setIsSavingThisMonthBudget] = useState<boolean>(false);
 
   const [budgetValue, setBudgetValue] = useState<string>(
     (settings.defaultMonthlyBudget || 60000).toString()
@@ -66,12 +86,21 @@ export const SettingsScreen: React.FC = () => {
     flashMessage('Name updated!');
   };
 
+  const handleSaveThisMonthBudget = async () => {
+    const parsed = parseFloat(thisMonthBudgetValue);
+    if (!isNaN(parsed) && parsed >= 0) {
+      await updateMonthBudget(parsed, currentYear, now.getMonth() + 1, false);
+      setIsSavingThisMonthBudget(false);
+      flashMessage(`${currentMonthName} budget updated!`);
+    }
+  };
+
   const handleSaveBudget = async () => {
     const parsed = parseFloat(budgetValue);
     if (!isNaN(parsed) && parsed >= 0) {
       await setMonthlyBudget(parsed);
       setIsSavingBudget(false);
-      flashMessage('Monthly target updated!');
+      flashMessage('Default baseline budget updated!');
     }
   };
 
@@ -115,18 +144,26 @@ export const SettingsScreen: React.FC = () => {
     flashMessage('All expense records reset.');
   };
 
-  const handleExportCSV = () => {
+  const handleExportCSV = async () => {
     if (expenses.length === 0) {
       flashMessage('No expenses to export.');
       return;
     }
-    exportExpensesToCSV(expenses, categories, currency.code);
-    flashMessage('CSV export created!');
+    try {
+      await exportExpensesToCSV(expenses, categories, currency.code);
+      flashMessage('CSV export created!');
+    } catch (err: any) {
+      flashMessage(err.message || 'Export failed.');
+    }
   };
 
   const handleExportJSON = async () => {
-    await exportAllDataToJSON();
-    flashMessage('Full JSON backup downloaded!');
+    try {
+      await exportAllDataToJSON();
+      flashMessage('Full JSON backup generated!');
+    } catch (err: any) {
+      flashMessage(err.message || 'Export failed.');
+    }
   };
 
   const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -138,8 +175,10 @@ export const SettingsScreen: React.FC = () => {
       try {
         const content = event.target?.result as string;
         const res = await importDataFromJSON(content);
-        await refreshData();
-        flashMessage(`Imported ${res.expensesCount} expenses!`);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+        flashMessage(`Imported ${res.expensesCount} expenses! App will restart...`);
       } catch (err: any) {
         flashMessage(`Import failed: ${err.message}`);
       }
@@ -227,7 +266,7 @@ export const SettingsScreen: React.FC = () => {
               <button
                 key={t.id}
                 type="button"
-                onClick={(e) => executeThemeTransition(() => setTheme(t.id as ThemeMode), e)}
+                onClick={() => executeThemeTransition(() => setTheme(t.id as ThemeMode))}
                 className={`py-2.5 px-2 rounded-xl text-xs font-semibold text-center transition-all active:scale-95 cursor-pointer ${
                   isSelected
                     ? 'border border-emerald-500 bg-emerald-500/20 text-emerald-400 font-bold ring-1 ring-emerald-500/40 shadow-xs'
@@ -242,47 +281,107 @@ export const SettingsScreen: React.FC = () => {
       </section>
 
       {/* 3. Monthly Budget */}
-      <section className="glass-panel p-3.5 rounded-2xl space-y-3">
+      <section className="glass-panel p-3.5 rounded-2xl space-y-3.5">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
             <Target size={16} />
           </div>
           <div>
             <h3 className="text-xs font-bold text-neutral-900 dark:text-white">
-              Monthly Budget Limit
+              Monthly Budget Limits
             </h3>
             <p className="text-[10px] text-neutral-500 dark:text-neutral-400">
-              Dashboard spending target
+              Active month targets and baseline cap
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 pt-0.5">
-          <div className="relative flex-1 flex items-center rounded-xl glass-panel px-3 py-2">
-            <span className="text-xs font-bold text-neutral-400 mr-2">{currency.symbol}</span>
-            <input
-              type="number"
-              min="0"
-              step="any"
-              value={budgetValue}
-              onChange={(e) => {
-                setBudgetValue(e.target.value);
-                setIsSavingBudget(true);
-              }}
-              className="w-full text-xs font-bold tabular-nums text-neutral-900 dark:text-white bg-transparent outline-hidden"
-            />
+        {/* 3a. Current Month Target */}
+        <div className="space-y-1.5 pt-0.5">
+          <div className="flex items-center justify-between">
+            <label className="text-[11px] font-bold text-neutral-700 dark:text-emerald-300/90 flex items-center gap-1.5">
+              <Calendar size={13} className="text-emerald-400" />
+              <span>{currentMonthName} {currentYear} Budget</span>
+            </label>
+            <span className="text-[10px] font-semibold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+              Active Month
+            </span>
           </div>
-
-          {isSavingBudget && (
-            <button
-              type="button"
-              onClick={handleSaveBudget}
-              className="px-4 py-2.5 rounded-xl glass-button-primary text-black text-xs font-bold active:scale-95 transition-all cursor-pointer shadow-xs"
-            >
-              Save
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1 flex items-center rounded-xl glass-panel px-3 py-2 border border-lime-400/20">
+              <span className="text-xs font-bold text-neutral-400 mr-2">{currency.symbol}</span>
+              <input
+                type="number"
+                min="0"
+                step="any"
+                value={thisMonthBudgetValue}
+                onChange={(e) => {
+                  setThisMonthBudgetValue(e.target.value);
+                  setIsSavingThisMonthBudget(true);
+                }}
+                className="w-full text-xs font-bold tabular-nums text-neutral-900 dark:text-white bg-transparent outline-hidden"
+              />
+            </div>
+            {isSavingThisMonthBudget && (
+              <button
+                type="button"
+                onClick={handleSaveThisMonthBudget}
+                className="px-3.5 py-2 rounded-xl glass-button-primary text-black text-xs font-bold active:scale-95 transition-all cursor-pointer shadow-xs"
+              >
+                Save
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* 3b. Baseline Default Budget */}
+        <div className="space-y-1.5 pt-1">
+          <div className="flex items-center justify-between">
+            <label className="text-[11px] font-bold text-neutral-700 dark:text-neutral-300">
+              Default Baseline Budget
+            </label>
+            <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
+              Auto-applies on 1st of month
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1 flex items-center rounded-xl glass-panel px-3 py-2">
+              <span className="text-xs font-bold text-neutral-400 mr-2">{currency.symbol}</span>
+              <input
+                type="number"
+                min="0"
+                step="any"
+                value={budgetValue}
+                onChange={(e) => {
+                  setBudgetValue(e.target.value);
+                  setIsSavingBudget(true);
+                }}
+                className="w-full text-xs font-bold tabular-nums text-neutral-900 dark:text-white bg-transparent outline-hidden"
+              />
+            </div>
+            {isSavingBudget && (
+              <button
+                type="button"
+                onClick={handleSaveBudget}
+                className="px-3.5 py-2 rounded-xl glass-button-primary text-black text-xs font-bold active:scale-95 transition-all cursor-pointer shadow-xs"
+              >
+                Save
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* 3c. Preview 1st-of-the-Month Prompt */}
+        <button
+          type="button"
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent('open_monthly_budget_prompt'));
+          }}
+          className="w-full mt-2 py-2 px-3 rounded-xl glass-button border border-lime-400/25 text-xs font-semibold text-lime-300 flex items-center justify-center gap-2 hover:bg-lime-500/10 active:scale-95 transition-all cursor-pointer"
+        >
+          <CalendarClock size={14} className="text-lime-400" />
+          <span>Preview 1st-of-Month Budget Prompt</span>
+        </button>
       </section>
 
       {/* 4. Category Management */}
@@ -323,22 +422,16 @@ export const SettingsScreen: React.FC = () => {
               required
             />
             <div className="flex items-center gap-2">
-              <select
+              <IconPicker
                 value={catIcon}
-                onChange={(e) => setCatIcon(e.target.value)}
-                className="flex-1 px-3 py-2 text-xs rounded-xl glass-panel text-neutral-900 dark:text-white outline-hidden"
-              >
-                {AVAILABLE_CATEGORY_ICONS.map((iconName) => (
-                  <option key={iconName} value={iconName} className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white">
-                    {iconName}
-                  </option>
-                ))}
-              </select>
+                onChange={setCatIcon}
+                accentColor={catColor}
+              />
               <input
                 type="color"
                 value={catColor}
                 onChange={(e) => setCatColor(e.target.value)}
-                className="w-9 h-8 rounded-xl cursor-pointer border border-neutral-200 dark:border-white/10 p-0.5 bg-transparent"
+                className="w-9 h-8 rounded-xl cursor-pointer border border-neutral-200 dark:border-white/10 p-0.5 bg-transparent shrink-0"
               />
               <button
                 type="submit"

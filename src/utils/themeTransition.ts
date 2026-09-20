@@ -1,4 +1,3 @@
-import React from 'react';
 import { flushSync } from 'react-dom';
 
 /**
@@ -8,8 +7,7 @@ import { flushSync } from 'react-dom';
  * any stuttering or frame drops in the middle of the circular expansion.
  */
 export function executeThemeTransition(
-  toggleFn: () => void | Promise<void>,
-  event?: React.MouseEvent | React.TouchEvent
+  toggleFn: () => void | Promise<void>
 ) {
   const doc = document as any;
   const supportsViewTransition =
@@ -25,26 +23,6 @@ export function executeThemeTransition(
     return;
   }
 
-  // Determine origin coordinates for circular expansion
-  let x = window.innerWidth - 36;
-  let y = 36;
-
-  if (event) {
-    if ('clientX' in event && typeof event.clientX === 'number' && event.clientX > 0) {
-      x = event.clientX;
-      y = event.clientY;
-    } else if ('touches' in event && event.touches && event.touches.length > 0) {
-      x = event.touches[0].clientX;
-      y = event.touches[0].clientY;
-    }
-  }
-
-  // Calculate radius to the furthest corner of the screen
-  const endRadius = Math.hypot(
-    Math.max(x, window.innerWidth - x),
-    Math.max(y, window.innerHeight - y)
-  );
-
   // Disable conflicting element-level CSS transitions during view-transition snapshot
   document.documentElement.classList.add('theme-switching');
 
@@ -55,15 +33,27 @@ export function executeThemeTransition(
   });
 
   transition.ready.then(() => {
-    const animation = doc.documentElement.animate(
+    doc.documentElement.animate(
       {
-        clipPath: [
-          `circle(0px at ${x}px ${y}px)`,
-          `circle(${endRadius}px at ${x}px ${y}px)`,
-        ],
+        opacity: [1, 0],
+        filter: ['blur(0px)', 'blur(8px)'],
+        transform: ['scale(1)', 'scale(1.03)']
       },
       {
-        duration: 380,
+        duration: 250,
+        easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        pseudoElement: '::view-transition-old(root)',
+      }
+    );
+
+    const animation = doc.documentElement.animate(
+      {
+        opacity: [0, 1],
+        filter: ['blur(12px)', 'blur(0px)'],
+        transform: ['scale(0.97)', 'scale(1)']
+      },
+      {
+        duration: 250,
         easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
         pseudoElement: '::view-transition-new(root)',
       }

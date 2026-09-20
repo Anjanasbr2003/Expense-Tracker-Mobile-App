@@ -11,13 +11,10 @@ interface BudgetCardProps {
 }
 
 export const BudgetCard: React.FC<BudgetCardProps> = ({ spentAmount }) => {
-  const { settings, currency, setMonthlyBudget } = useSettings();
+  const { settings, currency, currentMonthBudget, setMonthlyBudget } = useSettings();
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [budgetString, setBudgetString] = useState<string>(
-    (settings.defaultMonthlyBudget || 0).toString()
-  );
-
-  const budgetAmount = settings.defaultMonthlyBudget || 0;
+  const budgetAmount = currentMonthBudget || settings.defaultMonthlyBudget || 0;
+  const [budgetString, setBudgetString] = useState<string>(budgetAmount.toString());
   const status = calculateBudgetStatus(spentAmount, budgetAmount);
 
   const handleSaveBudget = async () => {

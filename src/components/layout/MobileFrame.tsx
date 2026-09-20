@@ -9,7 +9,7 @@ export const MobileFrame: React.FC<MobileFrameProps> = ({ children }) => {
   const [showDeviceFrame, setShowDeviceFrame] = useState<boolean>(false);
 
   return (
-    <div className="h-full w-full bg-[#020503] flex flex-col items-center justify-center overflow-hidden selection:bg-lime-400 selection:text-black">
+    <div className="h-full w-full bg-[#030805] flex flex-col items-center justify-start sm:justify-center overflow-hidden selection:bg-lime-400 selection:text-black">
       {/* Desktop Helper Bar (visible only on large desktop screens) */}
       <div className="hidden sm:flex items-center justify-between w-full max-w-md px-3 py-1.5 text-xs text-emerald-400/80">
         <div className="flex items-center gap-1.5 font-medium">
@@ -37,7 +37,7 @@ export const MobileFrame: React.FC<MobileFrameProps> = ({ children }) => {
         {/* Ambient Top Radiant Emerald Glow matching reference UI */}
         <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-[160%] h-80 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(34,197,94,0.28)_0%,rgba(16,185,129,0.1)_40%,transparent_72%)] pointer-events-none z-0 dark:block hidden" />
 
-        <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
+        <div className="relative z-10 flex-1 flex flex-col overflow-hidden min-h-0">
           {children}
         </div>
       </div>

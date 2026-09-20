@@ -18,14 +18,14 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const { isDark, setTheme, settings } = useSettings();
 
-  const handleToggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleToggleTheme = () => {
     executeThemeTransition(() => {
       if (settings.theme === 'dark') {
         setTheme('light');
       } else {
         setTheme('dark');
       }
-    }, e);
+    });
   };
 
   const isHome = title === 'SpendWise' || title === 'Dashboard';

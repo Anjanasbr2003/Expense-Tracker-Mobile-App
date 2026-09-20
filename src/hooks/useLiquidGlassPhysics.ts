@@ -23,9 +23,9 @@ export function useLiquidGlassPhysics(
 ): LiquidGlassPhysicsState {
   const [physicsState, setPhysicsState] = useState<LiquidGlassPhysicsState>({
     x: 0,
-    y: 5,
-    width: 68,
-    height: 54,
+    y: 6,
+    width: 56,
+    height: 50,
     scaleX: 1,
     scaleY: 1,
     velocity: 0,
@@ -50,10 +50,10 @@ export function useLiquidGlassPhysics(
     const containerRect = container.getBoundingClientRect();
 
     // Generous capsule padding so the entire tab element (icon + label) is completely contained
-    const height = Math.min(Math.max(containerRect.height - 10, 48), 54);
+    const height = Math.min(Math.max(containerRect.height - 12, 46), 52);
     const y = Math.max(0, (containerRect.height - height) / 2);
-    // Hug button footprint with slight 3px inset on each side
-    const width = Math.max(btnRect.width - 6, 62);
+    // Hug button footprint with comfortable insets; cap width to 58px so it never overlaps the center + action button
+    const width = Math.min(Math.max(btnRect.width - 10, 48), 58);
     const x = btnRect.left - containerRect.left + (btnRect.width - width) / 2;
 
     return { x, y, width, height };

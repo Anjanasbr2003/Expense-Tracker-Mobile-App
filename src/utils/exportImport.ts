@@ -1,12 +1,15 @@
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 import type { Expense, Category } from '../types';
 import { db } from '../db/database';
 import { getTodayDateString } from './dateUtils';
 
-export function exportExpensesToCSV(
+export async function exportExpensesToCSV(
   expenses: Expense[],
   categories: Category[],
   currencyCode: string = 'LKR'
-): void {
+): Promise<void> {
   const categoryMap = new Map<string, string>();
   categories.forEach((c) => categoryMap.set(c.id, c.name));
 
@@ -27,8 +30,9 @@ export function exportExpensesToCSV(
   });
 
   const csvContent = [headers.join(','), ...rows].join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  downloadBlob(blob, `expenses-${getTodayDateString()}.csv`);
+  const filename = `expenses-${getTodayDateString()}.csv`;
+  
+  await saveAndShareFile(csvContent, filename, 'text/csv');
 }
 
 export async function exportAllDataToJSON(): Promise<void> {
@@ -47,8 +51,9 @@ export async function exportAllDataToJSON(): Promise<void> {
   };
 
   const jsonStr = JSON.stringify(backupData, null, 2);
-  const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8;' });
-  downloadBlob(blob, `expense-tracker-backup-${getTodayDateString()}.json`);
+  const filename = `expense-tracker-backup-${getTodayDateString()}.json`;
+  
+  await saveAndShareFile(jsonStr, filename, 'application/json');
 }
 
 export async function importDataFromJSON(
@@ -100,14 +105,37 @@ export async function importDataFromJSON(
   return { expensesCount, categoriesCount };
 }
 
-function downloadBlob(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.setAttribute('href', url);
-  link.setAttribute('download', filename);
-  link.style.visibility = 'hidden';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+async function saveAndShareFile(content: string, filename: string, mimeType: string): Promise<void> {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const result = await Filesystem.writeFile({
+        path: filename,
+        data: content,
+        directory: Directory.Cache,
+        encoding: Encoding.UTF8,
+      });
+      
+      await Share.share({
+        title: `Export ${filename}`,
+        text: `Here is your SpendWise export: ${filename}`,
+        url: result.uri,
+        dialogTitle: 'Save or Share Export',
+      });
+    } catch (err) {
+      console.error('File write/share failed', err);
+      throw new Error('Failed to save or share file natively.');
+    }
+  } else {
+    // Fallback for Web Browser
+    const blob = new Blob([content], { type: `${mimeType};charset=utf-8;` });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
 }

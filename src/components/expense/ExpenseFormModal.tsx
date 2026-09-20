@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { Expense, PaymentMethod } from '../../types';
 import { useExpenses } from '../../context/ExpenseContext';
 import { useSettings } from '../../context/SettingsContext';
-import { CategoryIcon, AVAILABLE_CATEGORY_ICONS } from '../common/CategoryIcon';
+import { CategoryIcon } from '../common/CategoryIcon';
+import { IconPicker } from '../common/IconPicker';
 import { getTodayDateString, getCurrentTimeString } from '../../utils/dateUtils';
 import { X, Calendar, Clock, Plus, Trash2, Check } from 'lucide-react';
 import { hapticLight, hapticSuccess, hapticWarning } from '../../utils/haptics';
@@ -164,10 +166,10 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
     }
   };
 
-  return (
+  return createPortal(
     <div
       onClick={triggerClose}
-      className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 transition-opacity duration-200 ${
+      className={`fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-[#030805]/80 backdrop-blur-md transition-opacity duration-200 overscroll-contain ${
         isClosing ? 'opacity-0' : 'animate-in fade-in duration-150'
       }`}
     >
@@ -296,23 +298,17 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                 />
 
                 <div className="flex items-center gap-2">
-                  <select
+                  <IconPicker
                     value={newCatIcon}
-                    onChange={(e) => setNewCatIcon(e.target.value)}
-                    className="flex-1 px-3 py-2 text-xs rounded-xl glass-button text-neutral-900 dark:text-white outline-hidden"
-                  >
-                    {AVAILABLE_CATEGORY_ICONS.map((iconName) => (
-                      <option key={iconName} value={iconName}>
-                        {iconName}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setNewCatIcon}
+                    accentColor={newCatColor}
+                  />
 
                   <input
                     type="color"
                     value={newCatColor}
                     onChange={(e) => setNewCatColor(e.target.value)}
-                    className="w-10 h-8 rounded-lg cursor-pointer border border-neutral-300 dark:border-neutral-700 p-0.5 bg-transparent"
+                    className="w-10 h-8 rounded-lg cursor-pointer border border-neutral-300 dark:border-neutral-700 p-0.5 bg-transparent shrink-0"
                   />
 
                   <button
@@ -488,6 +484,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
