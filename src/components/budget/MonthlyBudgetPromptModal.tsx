@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useSettings } from '../../context/SettingsContext';
 import { Calendar, Target, Check } from 'lucide-react';
 import { hapticSuccess, hapticLight } from '../../utils/haptics';
@@ -75,8 +76,8 @@ export const MonthlyBudgetPromptModal: React.FC<MonthlyBudgetPromptModalProps> =
     onClose();
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#030805]/85 backdrop-blur-xl animate-in fade-in duration-200 select-none overflow-y-auto overscroll-contain">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#030805]/85 backdrop-blur-xl animate-in fade-in duration-200 select-none overflow-y-auto overscroll-contain">
       <div className="w-full max-w-md my-auto max-h-[92vh] overflow-y-auto rounded-3xl glass-emerald-card border border-lime-400/35 p-6 shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_30px_rgba(34,197,94,0.2)] animate-scale-check">
         {/* Header Branding & Calendar Icon */}
         <div className="flex flex-col items-center text-center mb-5">
@@ -217,6 +218,7 @@ export const MonthlyBudgetPromptModal: React.FC<MonthlyBudgetPromptModalProps> =
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

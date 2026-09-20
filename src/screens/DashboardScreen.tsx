@@ -9,7 +9,7 @@ import { AnimatedNumber } from '../components/common/AnimatedNumber';
 import { formatCurrency } from '../utils/currency';
 import { hapticLight } from '../utils/haptics';
 import type { Expense } from '../types';
-import { Plus, ArrowRight, ChevronDown, Calendar, Receipt, Wallet, PieChart, CalendarClock, X } from 'lucide-react';
+import { Plus, ArrowRight, ChevronDown, Calendar, Receipt, Wallet, PieChart, X } from 'lucide-react';
 
 interface DashboardScreenProps {
   onOpenAddExpense: (date?: string) => void;
@@ -25,7 +25,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   onNavigateToHistory,
 }) => {
   const { expenses, categories, todayTotal, thisMonthTotal, isLoading } = useExpenses();
-  const { currency } = useSettings();
+  const { currency, currentMonthBudget } = useSettings();
   const [activeSubView, setActiveSubView] = useState<DashboardSubView>('savings');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
@@ -69,6 +69,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
       })
       .slice(0, 3);
   }, [expenses, categories]);
+
+  const remainingBudget = currentMonthBudget - thisMonthTotal;
+  const percentageUsed = Math.min(100, Math.round((thisMonthTotal / (currentMonthBudget || 1)) * 100));
+  const isOverBudget = remainingBudget < 0;
 
   return (
     <div className="flex-1 flex flex-col p-3.5 overflow-y-auto no-scrollbar select-none gap-3 pb-8">
@@ -119,7 +123,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
           }`}
         >
           <PieChart size={13} strokeWidth={activeSubView === 'footprint' ? 2.6 : 2} className="shrink-0" />
-          <span className="truncate">Footprint</span>
+          <span className="truncate">Insights</span>
         </button>
 
         <button
@@ -134,19 +138,22 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               : 'text-neutral-600 dark:text-emerald-100/70 hover:text-neutral-900 dark:hover:text-white hover:bg-white/5'
           }`}
         >
-          <CalendarClock size={13} strokeWidth={activeSubView === 'planner' ? 2.6 : 2} className="shrink-0" />
+          <Receipt size={13} strokeWidth={activeSubView === 'planner' ? 2.6 : 2} className="shrink-0" />
           <span className="truncate">Bills</span>
         </button>
       </div>
 
       {/* 2. Main Hero Subview Content */}
       {activeSubView === 'savings' && (
-        <div className="p-4 rounded-3xl glass-emerald-card relative animate-fade-slide-up transition-colors">
-          {/* Header Row: Title + Period Selector Pill */}
-          <div className="flex items-center justify-between">
+        <div className="p-5 rounded-3xl glass-emerald-card relative overflow-hidden animate-fade-slide-up group shrink-0">
+          {/* Background Ambient Glow */}
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-lime-400/20 dark:bg-lime-400/10 rounded-full blur-[40px] pointer-events-none group-hover:bg-lime-400/30 transition-colors duration-700" />
+          <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-emerald-500/15 dark:bg-emerald-500/10 rounded-full blur-[40px] pointer-events-none group-hover:bg-emerald-500/25 transition-colors duration-700" />
+
+          <div className="flex items-start justify-between relative z-10">
             <div>
-              <h2 className="text-sm font-bold tracking-tight text-neutral-900 dark:text-white">
-                Total Savings & Spending
+              <h2 className="text-[13px] font-bold text-neutral-800 dark:text-emerald-100 uppercase tracking-widest mb-0.5">
+                Spendings
               </h2>
               <p className="text-[10px] text-emerald-600 dark:text-emerald-300/70 font-medium">
                 01 {monthName} - End of Month
@@ -168,8 +175,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             </button>
           </div>
 
-          {/* Primary Amount & Delta Pill */}
-          <div className="flex items-baseline justify-between mt-3 mb-1">
+          {/* Primary Amount & Budget Left Pill */}
+          <div className="flex items-center justify-between mt-3.5 mb-1.5">
             <div>
               <div className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white tabular-nums">
                 <AnimatedNumber value={thisMonthTotal} currencyCode={currency.code} />
@@ -182,12 +189,24 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               </div>
             </div>
 
-            <div className="text-right">
-              <span className="text-xs font-bold text-emerald-600 dark:text-lime-300 tabular-nums">
-                +4.96%
-              </span>
-              <span className="block text-[9px] text-neutral-500 dark:text-emerald-200/60 uppercase tracking-wider font-semibold">
-                Current Month
+            <div className="flex flex-col items-end gap-1">
+              <div
+                className={`px-2.5 py-1 rounded-xl text-xs font-bold tabular-nums inline-flex items-center gap-1 shadow-xs ${
+                  isOverBudget
+                    ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/25'
+                    : 'bg-emerald-500/15 text-emerald-700 dark:text-lime-300 border border-emerald-500/25'
+                }`}
+              >
+                {isOverBudget
+                  ? 'Over Budget'
+                  : `${currency.symbol} ${Math.abs(remainingBudget).toLocaleString()} Left`}
+              </div>
+              <span
+                className={`text-[10px] uppercase tracking-wider font-semibold ${
+                  isOverBudget ? 'text-rose-500/80' : 'text-neutral-500 dark:text-emerald-200/70'
+                }`}
+              >
+                {percentageUsed}% of {currency.symbol} {currentMonthBudget.toLocaleString()}
               </span>
             </div>
           </div>
@@ -198,13 +217,13 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
       )}
 
       {activeSubView === 'footprint' && (
-        <div className="animate-fade-slide-up">
+        <div className="animate-fade-slide-up shrink-0">
           <SpendingFootprintCard totalSpent={thisMonthTotal} onSeeDetails={onNavigateToHistory} />
         </div>
       )}
 
       {activeSubView === 'planner' && (
-        <div className="p-4 rounded-3xl glass-emerald-card animate-fade-slide-up transition-colors">
+        <div className="p-4 rounded-3xl glass-emerald-card animate-fade-slide-up transition-colors shrink-0">
           <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Planned Recurring Bills</h3>

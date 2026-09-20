@@ -43,7 +43,6 @@ export const SettingsScreen: React.FC = () => {
     clearAllData,
     addCategory,
     deleteCategory,
-    refreshData,
   } = useExpenses();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -145,18 +144,26 @@ export const SettingsScreen: React.FC = () => {
     flashMessage('All expense records reset.');
   };
 
-  const handleExportCSV = () => {
+  const handleExportCSV = async () => {
     if (expenses.length === 0) {
       flashMessage('No expenses to export.');
       return;
     }
-    exportExpensesToCSV(expenses, categories, currency.code);
-    flashMessage('CSV export created!');
+    try {
+      await exportExpensesToCSV(expenses, categories, currency.code);
+      flashMessage('CSV export created!');
+    } catch (err: any) {
+      flashMessage(err.message || 'Export failed.');
+    }
   };
 
   const handleExportJSON = async () => {
-    await exportAllDataToJSON();
-    flashMessage('Full JSON backup downloaded!');
+    try {
+      await exportAllDataToJSON();
+      flashMessage('Full JSON backup generated!');
+    } catch (err: any) {
+      flashMessage(err.message || 'Export failed.');
+    }
   };
 
   const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,8 +175,10 @@ export const SettingsScreen: React.FC = () => {
       try {
         const content = event.target?.result as string;
         const res = await importDataFromJSON(content);
-        await refreshData();
-        flashMessage(`Imported ${res.expensesCount} expenses!`);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+        flashMessage(`Imported ${res.expensesCount} expenses! App will restart...`);
       } catch (err: any) {
         flashMessage(`Import failed: ${err.message}`);
       }
@@ -257,7 +266,7 @@ export const SettingsScreen: React.FC = () => {
               <button
                 key={t.id}
                 type="button"
-                onClick={(e) => executeThemeTransition(() => setTheme(t.id as ThemeMode), e)}
+                onClick={() => executeThemeTransition(() => setTheme(t.id as ThemeMode))}
                 className={`py-2.5 px-2 rounded-xl text-xs font-semibold text-center transition-all active:scale-95 cursor-pointer ${
                   isSelected
                     ? 'border border-emerald-500 bg-emerald-500/20 text-emerald-400 font-bold ring-1 ring-emerald-500/40 shadow-xs'

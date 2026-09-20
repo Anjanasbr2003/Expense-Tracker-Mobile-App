@@ -37,7 +37,7 @@ export const MobileFrame: React.FC<MobileFrameProps> = ({ children }) => {
         {/* Ambient Top Radiant Emerald Glow matching reference UI */}
         <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-[160%] h-80 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(34,197,94,0.28)_0%,rgba(16,185,129,0.1)_40%,transparent_72%)] pointer-events-none z-0 dark:block hidden" />
 
-        <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
+        <div className="relative z-10 flex-1 flex flex-col overflow-hidden min-h-0">
           {children}
         </div>
       </div>

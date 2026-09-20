@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { CategoryIcon, AVAILABLE_CATEGORY_ICONS } from './CategoryIcon';
 import { ChevronDown, Search, X } from 'lucide-react';
 import { hapticLight } from '../../utils/haptics';
@@ -57,9 +58,9 @@ export const IconPicker: React.FC<IconPickerProps> = ({
       </button>
 
       {/* 2. Visual Icon Palette Modal (No empty native dialogs!) */}
-      {isOpen && (
+      {isOpen && createPortal(
         <div
-          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-[#030805]/85 backdrop-blur-xl animate-in fade-in duration-150 select-none overscroll-contain"
+          className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-[#030805]/85 backdrop-blur-xl animate-in fade-in duration-150 select-none overscroll-contain"
           onClick={() => {
             setIsOpen(false);
             setSearchQuery('');
@@ -167,7 +168,8 @@ export const IconPicker: React.FC<IconPickerProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

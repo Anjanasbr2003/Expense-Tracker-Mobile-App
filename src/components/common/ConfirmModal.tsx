@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, Trash2, X } from 'lucide-react';
 import { hapticWarning, hapticHeavy } from '../../utils/haptics';
 
@@ -50,10 +51,10 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     }, 140);
   };
 
-  return (
+  return createPortal(
     <div
       onClick={handleClose}
-      className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-[#030805]/80 backdrop-blur-sm transition-opacity duration-150 ${
+      className={`fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-[#030805]/80 backdrop-blur-sm transition-opacity duration-150 ${
         isClosing ? 'opacity-0' : 'animate-in fade-in duration-150'
       }`}
     >
@@ -112,6 +113,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

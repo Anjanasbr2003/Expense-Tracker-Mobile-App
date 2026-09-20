@@ -113,8 +113,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setIsDark(darkActive);
       if (darkActive) {
         root.classList.add('dark');
+        root.style.backgroundColor = '#030805';
+        root.style.colorScheme = 'dark';
       } else {
         root.classList.remove('dark');
+        root.style.backgroundColor = '#f8fafc';
+        root.style.colorScheme = 'light';
       }
     };
 
@@ -149,8 +153,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     if (darkActive) {
       root.classList.add('dark');
+      root.style.backgroundColor = '#030805';
+      root.style.colorScheme = 'dark';
     } else {
       root.classList.remove('dark');
+      root.style.backgroundColor = '#f8fafc';
+      root.style.colorScheme = 'light';
     }
     setIsDark(darkActive);
 

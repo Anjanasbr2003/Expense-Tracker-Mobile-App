@@ -3,6 +3,7 @@ import { SettingsProvider, useSettings } from './context/SettingsContext';
 import { ExpenseProvider, useExpenses } from './context/ExpenseContext';
 import { BottomNav, type TabType } from './components/layout/BottomNav';
 import { Header } from './components/layout/Header';
+import { TabTransition } from './components/layout/TabTransition';
 import { MobileFrame } from './components/layout/MobileFrame';
 import { DashboardScreen } from './screens/DashboardScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
@@ -125,46 +126,30 @@ const MainApp: React.FC = () => {
           onAvatarClick={() => setActiveTab('settings')}
         />
 
-        <main className="flex-1 flex flex-col overflow-hidden relative">
-          <div
-            className={`flex-1 flex flex-col overflow-hidden ${
-              activeTab === 'home' ? 'flex' : 'hidden'
-            }`}
-          >
+        <main className="flex-1 flex flex-col overflow-hidden relative min-h-0">
+          <TabTransition isActive={activeTab === 'home'}>
             <DashboardScreen
               onOpenAddExpense={handleOpenAdd}
               onEditExpense={handleOpenEdit}
               onNavigateToHistory={() => setActiveTab('history')}
             />
-          </div>
+          </TabTransition>
 
-          <div
-            className={`flex-1 flex flex-col overflow-hidden ${
-              activeTab === 'history' ? 'flex' : 'hidden'
-            }`}
-          >
+          <TabTransition isActive={activeTab === 'history'}>
             <HistoryScreen
               onOpenAddExpense={handleOpenAdd}
               onEditExpense={handleOpenEdit}
               onRequestDelete={handleRequestDelete}
             />
-          </div>
+          </TabTransition>
 
-          <div
-            className={`flex-1 flex flex-col overflow-hidden ${
-              activeTab === 'analytics' ? 'flex' : 'hidden'
-            }`}
-          >
+          <TabTransition isActive={activeTab === 'analytics'}>
             <AnalyticsScreen onOpenAddExpense={handleOpenAdd} />
-          </div>
+          </TabTransition>
 
-          <div
-            className={`flex-1 flex flex-col overflow-hidden ${
-              activeTab === 'settings' ? 'flex' : 'hidden'
-            }`}
-          >
+          <TabTransition isActive={activeTab === 'settings'}>
             <SettingsScreen />
-          </div>
+          </TabTransition>
         </main>
 
       {/* Persistent Bottom Navigation */}

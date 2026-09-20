@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark" style="background-color: #030805; color-scheme: dark;">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -13,8 +13,6 @@
     <title>SpendWise</title>
     <style>
       html, body {
-        background-color: #030805 !important;
-        color: #f8fafc;
         margin: 0;
         padding: 0;
         height: 100%;
@@ -40,10 +38,35 @@
         100% { transform: scale(1.04); opacity: 1; }
       }
     </style>
+    <script>
+      // Instantly apply saved theme BEFORE any paint to prevent white/dark flash
+      (function() {
+        var isDark = true; // default to dark
+        try {
+          var saved = localStorage.getItem('spendwise_settings');
+          if (saved) {
+            var s = JSON.parse(saved);
+            if (s.theme === 'light') isDark = false;
+            else if (s.theme === 'dark') isDark = true;
+            else isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          }
+        } catch(e) {}
+        var root = document.documentElement;
+        if (isDark) {
+          root.classList.add('dark');
+          root.style.backgroundColor = '#030805';
+          root.style.colorScheme = 'dark';
+        } else {
+          root.classList.remove('dark');
+          root.style.backgroundColor = '#f8fafc';
+          root.style.colorScheme = 'light';
+        }
+      })();
+    </script>
   </head>
-  <body class="dark bg-[#030805] text-neutral-100 antialiased selection:bg-emerald-500 selection:text-white" style="background-color: #030805; margin: 0; padding: 0;">
+  <body class="antialiased selection:bg-emerald-500 selection:text-white">
     <div id="root" class="h-full w-full">
-      <!-- Instant 0ms branded SpendWise splash (replaces blank white screen before JS executes) -->
+      <!-- Instant 0ms branded SpendWise splash (replaces blank screen before JS executes) -->
       <div id="app-splash">
         <div style="position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%); width: 280px; height: 280px; border-radius: 9999px; background: radial-gradient(circle, rgba(34,197,94,0.22) 0%, rgba(16,185,129,0.06) 50%, transparent 70%); pointer-events: none;"></div>
         <div class="splash-pulse" style="position: relative; width: 80px; height: 80px; border-radius: 24px; background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 36px rgba(16,185,129,0.35), 0 0 0 1px rgba(255,255,255,0.15); margin-bottom: 20px;">
@@ -58,13 +81,6 @@
     </div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      // Prevent Android WebView from scrolling root window when keyboard opens or input gains focus
-      window.addEventListener('scroll', function() {
-        if (window.scrollY !== 0 || window.scrollX !== 0) {
-          window.scrollTo(0, 0);
-        }
-      }, { passive: false });
-
       if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js').catch((err) => {
