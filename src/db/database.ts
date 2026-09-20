@@ -40,9 +40,20 @@ export async function initializeDatabase(): Promise<void> {
     const defaultSettings: AppSettings = {
       currencyCode: 'LKR',
       theme: 'system',
-      defaultMonthlyBudget: 60000,
+      defaultMonthlyBudget: 50000,
       hasLoadedInitialData: true,
+      hasCompletedOnboarding: false,
     };
     await db.settings.put({ key: 'app_settings', value: defaultSettings });
+  }
+
+  // Purge any legacy demo expenses so fresh deploys start 100% clean
+  try {
+    const demoItems = await db.expenses.filter((e) => e.isDemo === true).toArray();
+    if (demoItems.length > 0) {
+      await db.expenses.bulkDelete(demoItems.map((e) => e.id));
+    }
+  } catch (err) {
+    console.error('Error purging demo records:', err);
   }
 }

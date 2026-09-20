@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useExpenses } from '../context/ExpenseContext';
 import { useSettings } from '../context/SettingsContext';
-import type { Expense, PaymentMethod, ExpenseSortOption } from '../types';
+import type { Expense, PaymentMethod, ExpenseSortOption, Category } from '../types';
 import { ExpenseItem } from '../components/expense/ExpenseItem';
 import { EmptyState } from '../components/common/EmptyState';
+import { SpendingFootprintCard } from '../components/charts/SpendingFootprintCard';
 import { getDateGroupHeader } from '../utils/dateUtils';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
-
 import { AnimatedNumber } from '../components/common/AnimatedNumber';
 
 interface HistoryScreenProps {
@@ -20,7 +20,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
   onEditExpense,
   onRequestDelete,
 }) => {
-  const { expenses, categories } = useExpenses();
+  const { expenses, categories, thisMonthTotal } = useExpenses();
   const { currency } = useSettings();
 
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -29,6 +29,13 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
   const [selectedTimeRange, setSelectedTimeRange] = useState<'all' | 'this_month' | 'last_month'>('all');
   const [sortBy, setSortBy] = useState<ExpenseSortOption>('newest');
   const [showFilters, setShowFilters] = useState<boolean>(false);
+
+  // Fast O(1) Category Map
+  const fullCategoryMap = useMemo(() => {
+    const map = new Map<string, Category>();
+    categories.forEach((c) => map.set(c.id, c));
+    return map;
+  }, [categories]);
 
   // Filtered & Sorted Expenses
   const filteredExpenses = useMemo(() => {
@@ -40,13 +47,10 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
     const lastMonthDate = new Date(currentYear, currentMonth - 2, 1);
     const lastMonthPrefix = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, '0')}`;
 
-    const categoryMap = new Map<string, string>();
-    categories.forEach((c) => categoryMap.set(c.id, c.name.toLowerCase()));
-
     return expenses.filter((exp) => {
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim();
-        const catName = categoryMap.get(exp.categoryId) || '';
+        const catName = fullCategoryMap.get(exp.categoryId)?.name.toLowerCase() || '';
         const note = (exp.note || '').toLowerCase();
         const payment = exp.paymentMethod.toLowerCase();
         const amountStr = exp.amount.toString();
@@ -92,7 +96,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
       }
       return 0;
     });
-  }, [expenses, categories, searchQuery, selectedCategory, selectedPayment, selectedTimeRange, sortBy]);
+  }, [expenses, fullCategoryMap, searchQuery, selectedCategory, selectedPayment, selectedTimeRange, sortBy]);
 
   // Group by date
   const groupedExpenses = useMemo(() => {
@@ -131,22 +135,29 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto p-3.5 space-y-3">
+    <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar p-3.5 space-y-3 select-none">
+      {/* Spending Footprint Card at Top of Accounts (matching reference image) */}
+      {!searchQuery && activeFiltersCount === 0 && (
+        <div className="shrink-0 animate-fade-slide-up">
+          <SpendingFootprintCard totalSpent={thisMonthTotal} />
+        </div>
+      )}
+
       {/* Search Bar & Filter Toggle */}
       <div className="flex items-center gap-2 shrink-0">
         <div className="relative flex-1 flex items-center">
-          <Search size={15} className="absolute left-3.5 text-neutral-400" />
+          <Search size={15} className="absolute left-3.5 text-emerald-400/80" />
           <input
             type="text"
-            placeholder="Search note, category, amount..."
+            placeholder="Search transactions..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-8 py-2.5 rounded-2xl glass-panel text-xs font-semibold text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-500 outline-hidden focus:border-emerald-500/60 transition-colors"
+            className="w-full pl-9 pr-8 py-2.5 rounded-2xl glass-panel border border-lime-400/20 text-xs font-semibold text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-500 outline-hidden focus:border-lime-400/60 transition-colors"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 p-1 text-neutral-400 hover:text-neutral-200 rounded-full"
+              className="absolute right-2.5 p-1 text-neutral-400 hover:text-neutral-200 rounded-full cursor-pointer"
             >
               <X size={14} />
             </button>
@@ -158,14 +169,14 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
           onClick={() => setShowFilters(!showFilters)}
           className={`relative w-10 h-10 rounded-2xl glass-button flex items-center justify-center transition-all active:scale-90 cursor-pointer ${
             showFilters || activeFiltersCount > 0
-              ? 'border-emerald-500/50 text-emerald-400 bg-emerald-500/15'
+              ? 'border-lime-400/50 text-lime-400 bg-lime-400/15'
               : 'text-neutral-400'
           }`}
           title="Filters"
         >
           <SlidersHorizontal size={17} strokeWidth={2} />
           {activeFiltersCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 text-black text-[10px] font-bold flex items-center justify-center shadow-xs">
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-lime-400 text-black text-[10px] font-black flex items-center justify-center shadow-xs">
               {activeFiltersCount}
             </span>
           )}
@@ -174,9 +185,9 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
 
       {/* Expandable Filter Tray */}
       {showFilters && (
-        <div className="p-3.5 rounded-3xl glass-panel space-y-3 shadow-xl animate-in fade-in duration-150 shrink-0">
-          <div className="flex items-center justify-between pb-1.5 border-b border-neutral-200/60 dark:border-white/[0.06]">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+        <div className="p-3.5 rounded-3xl glass-emerald-card space-y-3 shadow-xl animate-in fade-in duration-150 shrink-0">
+          <div className="flex items-center justify-between pb-1.5 border-b border-white/10">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300/80">
               Filters & Sorting
             </span>
             {activeFiltersCount > 0 && (
@@ -192,7 +203,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
 
           {/* Time Range */}
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-1.5">Period</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-200/60 block mb-1.5">Period</span>
             <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
               {[
                 { id: 'all', label: 'All Time' },
@@ -216,7 +227,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
 
           {/* Category */}
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-1.5">Category</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-200/60 block mb-1.5">Category</span>
             <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
               <button
                 onClick={() => setSelectedCategory('all')}
@@ -246,7 +257,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
 
           {/* Sort By */}
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-1.5">Sort</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-200/60 block mb-1.5">Sort</span>
             <div className="grid grid-cols-2 gap-2">
               {[
                 { id: 'newest', label: 'Newest Date' },
@@ -291,8 +302,8 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
             return (
               <div key={group.date} className="space-y-1.5 animate-fade-slide-up">
                 {/* Date Header with Daily Subtotal */}
-                <div className="flex items-center justify-between px-1 py-1 sticky top-0 bg-white dark:bg-black z-10">
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                <div className="flex items-center justify-between px-1 py-1 sticky top-0 bg-slate-50/90 dark:bg-[#030805]/85 backdrop-blur-md z-10">
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300/80">
                     {headerLabel}
                   </h4>
                   <span className="text-xs font-semibold tabular-nums text-neutral-700 dark:text-neutral-300">
@@ -303,12 +314,16 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
                 {/* Items */}
                 <div className="space-y-1.5">
                   {group.items.map((item, idx) => {
-                    const cat = categories.find((c) => c.id === item.categoryId);
+                    const cat = fullCategoryMap.get(item.categoryId);
                     return (
                       <div
                         key={item.id}
-                        className="animate-fade-slide-up"
-                        style={{ animationDelay: `${Math.min((idx + 1) * 35, 200)}ms` }}
+                        className={idx < 8 ? 'animate-fade-slide-up' : ''}
+                        style={{
+                          contentVisibility: 'auto',
+                          containIntrinsicSize: '0 68px',
+                          animationDelay: idx < 8 ? `${Math.min((idx + 1) * 35, 200)}ms` : undefined,
+                        }}
                       >
                         <ExpenseItem
                           expense={item}

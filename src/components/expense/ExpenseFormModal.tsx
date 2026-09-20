@@ -5,11 +5,13 @@ import { useSettings } from '../../context/SettingsContext';
 import { CategoryIcon, AVAILABLE_CATEGORY_ICONS } from '../common/CategoryIcon';
 import { getTodayDateString, getCurrentTimeString } from '../../utils/dateUtils';
 import { X, Calendar, Clock, Plus, Trash2, Check } from 'lucide-react';
+import { hapticLight, hapticSuccess, hapticWarning } from '../../utils/haptics';
 
 interface ExpenseFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialExpense?: Expense | null;
+  initialDate?: string;
   onRequestDelete?: (expense: Expense) => void;
 }
 
@@ -19,6 +21,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
   isOpen,
   onClose,
   initialExpense,
+  initialDate,
   onRequestDelete,
 }) => {
   const { categories, addExpense, updateExpense, addCategory } = useExpenses();
@@ -26,7 +29,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
 
   const [amountStr, setAmountStr] = useState<string>('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
-  const [date, setDate] = useState<string>(getTodayDateString());
+  const [date, setDate] = useState<string>(initialDate || getTodayDateString());
   const [time, setTime] = useState<string>(getCurrentTimeString());
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Cash');
   const [note, setNote] = useState<string>('');
@@ -64,7 +67,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
       setAmountStr('');
       const defaultCat = categories.find((c) => c.id === 'cat-food') || categories[0];
       setSelectedCategoryId(defaultCat?.id || '');
-      setDate(getTodayDateString());
+      setDate(initialDate || getTodayDateString());
       setTime(getCurrentTimeString());
       setPaymentMethod('Cash');
       setNote('');
@@ -74,11 +77,12 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
     setSaveSuccess(false);
     setIsClosing(false);
     setShowAddCategory(false);
-  }, [initialExpense, isOpen, categories]);
+  }, [initialExpense, initialDate, isOpen, categories]);
 
   if (!isOpen) return null;
 
   const triggerShake = (msg: string) => {
+    hapticWarning();
     setErrorMsg(msg);
     setIsShaking(true);
     setTimeout(() => setIsShaking(false), 320);
@@ -118,6 +122,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
           note: note.trim(),
         });
       }
+      hapticSuccess();
       setSaveSuccess(true);
       setTimeout(() => {
         triggerClose();
@@ -204,7 +209,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
         </div>
 
         {/* Modal Content */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+        <form onSubmit={handleSubmit} noValidate className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
           {errorMsg && (
             <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-xs font-semibold animate-fade-slide-up">
               {errorMsg}
@@ -251,6 +256,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                   key={amt}
                   type="button"
                   onClick={() => {
+                    hapticLight();
                     setAmountStr(amt.toString());
                     if (errorMsg) setErrorMsg('');
                   }}
@@ -329,6 +335,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                     key={cat.id}
                     type="button"
                     onClick={() => {
+                      hapticLight();
                       setSelectedCategoryId(cat.id);
                       if (errorMsg) setErrorMsg('');
                     }}

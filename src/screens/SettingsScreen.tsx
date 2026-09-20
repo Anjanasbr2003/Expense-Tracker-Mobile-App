@@ -17,17 +17,16 @@ import {
   Plus,
   Check,
   AlertOctagon,
-  Sparkles,
+  User,
 } from 'lucide-react';
 import { executeThemeTransition } from '../utils/themeTransition';
 
 export const SettingsScreen: React.FC = () => {
-  const { settings, currency, setCurrencyCode, setTheme, setMonthlyBudget } = useSettings();
+  const { settings, currency, setCurrencyCode, setTheme, setMonthlyBudget, setUserName } = useSettings();
   const {
     expenses,
     categories,
     demoCount,
-    loadDemo,
     clearDemo,
     clearAllData,
     addCategory,
@@ -40,6 +39,9 @@ export const SettingsScreen: React.FC = () => {
   const [showClearDemoConfirm, setShowClearDemoConfirm] = useState<boolean>(false);
   const [showClearAllConfirm, setShowClearAllConfirm] = useState<boolean>(false);
   const [statusNotification, setStatusNotification] = useState<string>('');
+
+  const [userNameInput, setUserNameInput] = useState<string>(settings.userName || '');
+  const [isSavingName, setIsSavingName] = useState<boolean>(false);
 
   const [budgetValue, setBudgetValue] = useState<string>(
     (settings.defaultMonthlyBudget || 60000).toString()
@@ -54,6 +56,14 @@ export const SettingsScreen: React.FC = () => {
   const flashMessage = (msg: string) => {
     setStatusNotification(msg);
     setTimeout(() => setStatusNotification(''), 3000);
+  };
+
+  const handleSaveName = async () => {
+    if (!userNameInput.trim()) return;
+    setIsSavingName(true);
+    await setUserName(userNameInput.trim());
+    setIsSavingName(false);
+    flashMessage('Name updated!');
   };
 
   const handleSaveBudget = async () => {
@@ -91,11 +101,6 @@ export const SettingsScreen: React.FC = () => {
     } catch (err: any) {
       flashMessage(err.message || 'Cannot delete default category');
     }
-  };
-
-  const handleLoadDemo = async () => {
-    const count = await loadDemo();
-    flashMessage(`Loaded ${count} sample expenses!`);
   };
 
   const handleClearDemo = async () => {
@@ -258,7 +263,7 @@ export const SettingsScreen: React.FC = () => {
             <input
               type="number"
               min="0"
-              step="500"
+              step="any"
               value={budgetValue}
               onChange={(e) => {
                 setBudgetValue(e.target.value);
@@ -378,49 +383,55 @@ export const SettingsScreen: React.FC = () => {
         </div>
       </section>
 
-      {/* 5. Demo Data Controls */}
+      {/* 5. Personal Profile & Name */}
       <section className="glass-panel p-3.5 rounded-2xl space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
-              <Sparkles size={16} />
-            </div>
-            <div>
-              <h3 className="text-xs font-bold text-neutral-900 dark:text-white">
-                Demo Sample Data
-              </h3>
-              <p className="text-[10px] text-neutral-500 dark:text-neutral-400">
-                {demoCount > 0 ? `${demoCount} demo expenses loaded` : 'No demo data active'}
-              </p>
-            </div>
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-lime-500/10 text-lime-600 dark:text-lime-400 flex items-center justify-center border border-lime-500/20">
+            <User size={16} />
           </div>
-          {demoCount > 0 && (
-            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-              Active
-            </span>
-          )}
+          <div>
+            <h3 className="text-xs font-bold text-neutral-900 dark:text-white">
+              Personal Profile
+            </h3>
+            <p className="text-[10px] text-neutral-500 dark:text-neutral-400">
+              Customize your name for greeting and reports
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 pt-0.5">
+          <input
+            type="text"
+            value={userNameInput}
+            onChange={(e) => setUserNameInput(e.target.value)}
+            placeholder="Your name"
+            maxLength={30}
+            className="flex-1 py-2 px-3 rounded-xl glass-button text-xs font-semibold text-neutral-900 dark:text-white outline-none focus:border-lime-400 border border-black/5 dark:border-white/10"
+          />
           <button
             type="button"
-            onClick={handleLoadDemo}
-            className="flex-1 py-3 px-3.5 rounded-xl glass-button text-indigo-500 dark:text-indigo-300 text-xs font-bold active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+            onClick={handleSaveName}
+            disabled={isSavingName || !userNameInput.trim() || userNameInput.trim() === settings.userName}
+            className="py-2 px-3.5 rounded-xl glass-button-primary text-black text-xs font-bold active:scale-95 disabled:opacity-40 transition-all cursor-pointer"
           >
-            <Sparkles size={14} />
-            <span>Load Samples</span>
+            {isSavingName ? 'Saving...' : 'Save'}
           </button>
+        </div>
 
-          {demoCount > 0 && (
+        {demoCount > 0 && (
+          <div className="flex items-center justify-between p-2 rounded-xl bg-rose-500/10 border border-rose-500/20 mt-1">
+            <span className="text-[10px] font-semibold text-rose-500">
+              {demoCount} legacy sample records present
+            </span>
             <button
               type="button"
-              onClick={() => setShowClearDemoConfirm(true)}
-              className="py-3 px-3.5 rounded-xl glass-button text-neutral-700 dark:text-neutral-300 text-xs font-semibold active:scale-95 transition-all cursor-pointer"
+              onClick={clearDemo}
+              className="text-[10px] font-bold text-rose-500 hover:underline cursor-pointer"
             >
-              Clear Demo
+              Purge Samples
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </section>
 
       {/* 6. Offline Data Backup & Restore */}

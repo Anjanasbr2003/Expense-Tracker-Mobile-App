@@ -17,8 +17,11 @@ public class MainActivity extends BridgeActivity {
         window.setStatusBarColor(0xFF000000);
         window.setNavigationBarColor(0xFF000000);
 
-        // Fix Capacitor 8 insets stacking conflict that squishes WebView to 0 height when keyboard opens
+        // Fix Capacitor 8 insets stacking conflict and optimize WebView scrolling performance
         if (getBridge() != null && getBridge().getWebView() != null) {
+            getBridge().getWebView().setOverScrollMode(View.OVER_SCROLL_NEVER);
+            getBridge().getWebView().setVerticalScrollBarEnabled(false);
+            getBridge().getWebView().setHorizontalScrollBarEnabled(false);
             getBridge().getWebView().post(() -> {
                 try {
                     View parent = (View) getBridge().getWebView().getParent();

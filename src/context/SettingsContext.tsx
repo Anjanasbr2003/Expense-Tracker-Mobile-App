@@ -9,6 +9,8 @@ interface SettingsContextValue {
   setCurrencyCode: (code: string) => Promise<void>;
   setTheme: (theme: ThemeMode) => Promise<void>;
   setMonthlyBudget: (amount: number) => Promise<void>;
+  setUserName: (name: string) => Promise<void>;
+  completeOnboarding: (name: string, monthlyBudget: number, currencyCode?: string) => Promise<void>;
   isDark: boolean;
 }
 
@@ -102,12 +104,42 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const setTheme = async (theme: ThemeMode) => {
+    const root = document.documentElement;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    let darkActive = false;
+    if (theme === 'dark') darkActive = true;
+    else if (theme === 'light') darkActive = false;
+    else darkActive = mediaQuery.matches;
+
+    if (darkActive) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    setIsDark(darkActive);
+
     const updated = { ...settings, theme };
     await persistSettings(updated);
   };
 
   const setMonthlyBudget = async (amount: number) => {
     const updated = { ...settings, defaultMonthlyBudget: amount };
+    await persistSettings(updated);
+  };
+
+  const setUserName = async (name: string) => {
+    const updated = { ...settings, userName: name.trim() };
+    await persistSettings(updated);
+  };
+
+  const completeOnboarding = async (name: string, monthlyBudget: number, currencyCode?: string) => {
+    const updated: AppSettings = {
+      ...settings,
+      userName: name.trim(),
+      defaultMonthlyBudget: monthlyBudget,
+      currencyCode: currencyCode || settings.currencyCode,
+      hasCompletedOnboarding: true,
+    };
     await persistSettings(updated);
   };
 
@@ -121,6 +153,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setCurrencyCode,
         setTheme,
         setMonthlyBudget,
+        setUserName,
+        completeOnboarding,
         isDark,
       }}
     >
