@@ -57,8 +57,8 @@ public class MainActivity extends BridgeActivity {
             // Register native bridge for real-time widget data synchronization
             getBridge().getWebView().addJavascriptInterface(new Object() {
                 @JavascriptInterface
-                public void syncWidgetData(double todaySpent, double monthSpent, double monthlyBudget, String currencySymbol) {
-                    WidgetDataHelper.saveMetrics(MainActivity.this, todaySpent, monthSpent, monthlyBudget, currencySymbol);
+                public void syncWidgetData(double todaySpent, double monthSpent, double monthlyBudget, String currencySymbol, double monthlyRemaining, double weeklyRemaining) {
+                    WidgetDataHelper.saveMetrics(MainActivity.this, todaySpent, monthSpent, monthlyBudget, currencySymbol, monthlyRemaining, weeklyRemaining);
                 }
             }, "SpendWiseWidgetBridge");
 

@@ -25,12 +25,29 @@ const MainApp: React.FC = () => {
   const [initialFormDate, setInitialFormDate] = useState<string | undefined>();
   const [deletingExpense, setDeletingExpense] = useState<Expense | null>(null);
 
-  const { deleteExpense, todayTotal, thisMonthTotal } = useExpenses();
+  const { expenses, deleteExpense, todayTotal, thisMonthTotal } = useExpenses();
 
   // Synchronize live metrics with Android Home Screen Widgets
   useEffect(() => {
-    syncWidgetMetrics(todayTotal, thisMonthTotal, currentMonthBudget || 50000, currency.symbol);
-  }, [todayTotal, thisMonthTotal, currentMonthBudget, currency.symbol]);
+    const monthlyRemaining = (currentMonthBudget || 50000) - thisMonthTotal;
+    const weeklyBudget = settings.defaultWeeklyBudget || 15000;
+    // Rough weekly spent calculation (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const weeklySpent = expenses
+      .filter((e: Expense) => new Date(e.date) >= sevenDaysAgo)
+      .reduce((acc: number, curr: Expense) => acc + curr.amount, 0);
+    const weeklyRemaining = weeklyBudget - weeklySpent;
+
+    syncWidgetMetrics(
+      todayTotal, 
+      thisMonthTotal, 
+      currentMonthBudget || 50000, 
+      currency.symbol, 
+      monthlyRemaining, 
+      weeklyRemaining
+    );
+  }, [todayTotal, thisMonthTotal, currentMonthBudget, currency.symbol, settings.defaultWeeklyBudget, expenses]);
 
   // Handle widget shortcut events from Android home screen widgets
   useEffect(() => {

@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { MonthlyAnalyticsScreen } from './MonthlyAnalyticsScreen';
 import { YearlyAnalyticsScreen } from './YearlyAnalyticsScreen';
+import { DailyAnalyticsScreen } from './DailyAnalyticsScreen';
 import { RateBreakdownView } from '../components/charts/RateBreakdownView';
+import { useTranslation } from '../utils/i18n';
 
 export const AnalyticsScreen: React.FC<{ onOpenAddExpense: () => void }> = ({
   onOpenAddExpense,
 }) => {
-  const [subTab, setSubTab] = useState<'breakdown' | 'monthly' | 'yearly'>('breakdown');
+  const [subTab, setSubTab] = useState<'daily' | 'breakdown' | 'monthly' | 'yearly'>('daily');
+  const { t } = useTranslation();
 
   const getTabClass = (active: boolean) =>
     active
@@ -20,36 +23,46 @@ export const AnalyticsScreen: React.FC<{ onOpenAddExpense: () => void }> = ({
         <div className="flex rounded-2xl glass-dock-floating p-1 gap-1 border border-lime-400/20">
           <button
             type="button"
+            onClick={() => setSubTab('daily')}
+            className={`flex-1 py-2 rounded-xl text-[11px] transition-all cursor-pointer ${getTabClass(
+              subTab === 'daily'
+            )}`}
+          >
+            {t('Daily')}
+          </button>
+          <button
+            type="button"
             onClick={() => setSubTab('breakdown')}
-            className={`flex-1 py-2 rounded-xl text-xs transition-all cursor-pointer ${getTabClass(
+            className={`flex-1 py-2 rounded-xl text-[11px] transition-all cursor-pointer ${getTabClass(
               subTab === 'breakdown'
             )}`}
           >
-            Breakdown
+            {t('Breakdown')}
           </button>
           <button
             type="button"
             onClick={() => setSubTab('monthly')}
-            className={`flex-1 py-2 rounded-xl text-xs transition-all cursor-pointer ${getTabClass(
+            className={`flex-1 py-2 rounded-xl text-[11px] transition-all cursor-pointer ${getTabClass(
               subTab === 'monthly'
             )}`}
           >
-            Monthly
+            {t('Monthly')}
           </button>
           <button
             type="button"
             onClick={() => setSubTab('yearly')}
-            className={`flex-1 py-2 rounded-xl text-xs transition-all cursor-pointer ${getTabClass(
+            className={`flex-1 py-2 rounded-xl text-[11px] transition-all cursor-pointer ${getTabClass(
               subTab === 'yearly'
             )}`}
           >
-            Yearly
+            {t('Yearly')}
           </button>
         </div>
       </div>
 
       {/* View Container */}
       <div key={subTab} className="flex-1 flex flex-col overflow-y-auto no-scrollbar p-3.5 pt-1 animate-fade-slide-up">
+        {subTab === 'daily' && <DailyAnalyticsScreen />}
         {subTab === 'breakdown' && <RateBreakdownView />}
         {subTab === 'monthly' && (
           <MonthlyAnalyticsScreen onOpenAddExpense={onOpenAddExpense} />

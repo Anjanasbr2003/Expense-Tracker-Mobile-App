@@ -30,6 +30,9 @@ public class SpendWiseBudgetWidget extends AppWidgetProvider {
 
         views.setTextViewText(R.id.widget_budget_remaining, WidgetDataHelper.formatCurrency(remaining, currency));
         views.setTextViewText(R.id.widget_budget_month_spent, "Spent: " + WidgetDataHelper.formatCurrency(monthSpent, currency));
+        
+        float weeklyRemaining = prefs.getFloat(WidgetDataHelper.KEY_WEEKLY_REMAINING, 0.0f);
+        views.setTextViewText(R.id.widget_budget_weekly_remaining, "Weekly Left: " + WidgetDataHelper.formatCurrency(weeklyRemaining, currency));
 
         String statusText;
         if (remaining < 0) {

@@ -34,6 +34,9 @@ export const SettingsScreen: React.FC = () => {
     setMonthlyBudget,
     updateMonthBudget,
     setUserName,
+    setDailyBudget,
+    setWeeklyBudget,
+    setLanguage,
   } = useSettings();
   const {
     expenses,
@@ -68,6 +71,16 @@ export const SettingsScreen: React.FC = () => {
   );
   const [isSavingBudget, setIsSavingBudget] = useState<boolean>(false);
 
+  const [weeklyBudgetValue, setWeeklyBudgetValue] = useState<string>(
+    (settings.defaultWeeklyBudget || 15000).toString()
+  );
+  const [isSavingWeeklyBudget, setIsSavingWeeklyBudget] = useState<boolean>(false);
+
+  const [dailyBudgetValue, setDailyBudgetValue] = useState<string>(
+    (settings.defaultDailyBudget || 2000).toString()
+  );
+  const [isSavingDailyBudget, setIsSavingDailyBudget] = useState<boolean>(false);
+
   const [showAddCat, setShowAddCat] = useState<boolean>(false);
   const [catName, setCatName] = useState<string>('');
   const [catIcon, setCatIcon] = useState<string>('Tag');
@@ -101,6 +114,24 @@ export const SettingsScreen: React.FC = () => {
       await setMonthlyBudget(parsed);
       setIsSavingBudget(false);
       flashMessage('Default baseline budget updated!');
+    }
+  };
+
+  const handleSaveWeeklyBudget = async () => {
+    const parsed = parseFloat(weeklyBudgetValue);
+    if (!isNaN(parsed) && parsed >= 0) {
+      await setWeeklyBudget(parsed);
+      setIsSavingWeeklyBudget(false);
+      flashMessage('Weekly budget updated!');
+    }
+  };
+
+  const handleSaveDailyBudget = async () => {
+    const parsed = parseFloat(dailyBudgetValue);
+    if (!isNaN(parsed) && parsed >= 0) {
+      await setDailyBudget(parsed);
+      setIsSavingDailyBudget(false);
+      flashMessage('Daily budget updated!');
     }
   };
 
@@ -231,6 +262,48 @@ export const SettingsScreen: React.FC = () => {
               >
                 <div className="text-xs font-bold">{curr.code}</div>
                 <div className="text-[10px] text-neutral-500 dark:text-neutral-400">{curr.symbol}</div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 1.5. Language Settings */}
+      <section className="glass-panel p-3.5 rounded-2xl space-y-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
+            <Tags size={16} /> {/* Using Tags as generic icon or maybe a different one */}
+          </div>
+          <div>
+            <h3 className="text-xs font-bold text-neutral-900 dark:text-white">
+              Language / භාෂාව
+            </h3>
+            <p className="text-[10px] text-neutral-500 dark:text-neutral-400">
+              Choose your preferred language
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 pt-0.5">
+          {(
+            [
+              { id: 'en', label: 'English' },
+              { id: 'si', label: 'සිංහල (Sinhala)' },
+            ] as const
+          ).map((l) => {
+            const isSelected = (settings.language || 'en') === l.id;
+            return (
+              <button
+                key={l.id}
+                type="button"
+                onClick={() => setLanguage(l.id)}
+                className={`py-2.5 px-2 rounded-xl text-xs font-semibold text-center transition-all active:scale-95 cursor-pointer ${
+                  isSelected
+                    ? 'border border-emerald-500 bg-emerald-500/20 text-emerald-400 font-bold ring-1 ring-emerald-500/40 shadow-xs'
+                    : 'glass-button text-neutral-700 dark:text-neutral-300'
+                }`}
+              >
+                {l.label}
               </button>
             );
           })}
@@ -371,7 +444,75 @@ export const SettingsScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* 3c. Preview 1st-of-the-Month Prompt */}
+        {/* 3c. Weekly Budget */}
+        <div className="space-y-1.5 pt-1">
+          <div className="flex items-center justify-between">
+            <label className="text-[11px] font-bold text-neutral-700 dark:text-neutral-300">
+              Weekly Budget Limit
+            </label>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1 flex items-center rounded-xl glass-panel px-3 py-2">
+              <span className="text-xs font-bold text-neutral-400 mr-2">{currency.symbol}</span>
+              <input
+                type="number"
+                min="0"
+                step="any"
+                value={weeklyBudgetValue}
+                onChange={(e) => {
+                  setWeeklyBudgetValue(e.target.value);
+                  setIsSavingWeeklyBudget(true);
+                }}
+                className="w-full text-xs font-bold tabular-nums text-neutral-900 dark:text-white bg-transparent outline-hidden"
+              />
+            </div>
+            {isSavingWeeklyBudget && (
+              <button
+                type="button"
+                onClick={handleSaveWeeklyBudget}
+                className="px-3.5 py-2 rounded-xl glass-button-primary text-black text-xs font-bold active:scale-95 transition-all cursor-pointer shadow-xs"
+              >
+                Save
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* 3d. Daily Budget */}
+        <div className="space-y-1.5 pt-1">
+          <div className="flex items-center justify-between">
+            <label className="text-[11px] font-bold text-neutral-700 dark:text-neutral-300">
+              Daily Budget Limit
+            </label>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1 flex items-center rounded-xl glass-panel px-3 py-2">
+              <span className="text-xs font-bold text-neutral-400 mr-2">{currency.symbol}</span>
+              <input
+                type="number"
+                min="0"
+                step="any"
+                value={dailyBudgetValue}
+                onChange={(e) => {
+                  setDailyBudgetValue(e.target.value);
+                  setIsSavingDailyBudget(true);
+                }}
+                className="w-full text-xs font-bold tabular-nums text-neutral-900 dark:text-white bg-transparent outline-hidden"
+              />
+            </div>
+            {isSavingDailyBudget && (
+              <button
+                type="button"
+                onClick={handleSaveDailyBudget}
+                className="px-3.5 py-2 rounded-xl glass-button-primary text-black text-xs font-bold active:scale-95 transition-all cursor-pointer shadow-xs"
+              >
+                Save
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* 3e. Preview 1st-of-the-Month Prompt */}
         <button
           type="button"
           onClick={() => {

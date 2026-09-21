@@ -10,6 +10,7 @@ import { formatCurrency } from '../utils/currency';
 import { hapticLight } from '../utils/haptics';
 import type { Expense } from '../types';
 import { Plus, ArrowRight, ChevronDown, Calendar, Receipt, Wallet, PieChart, X } from 'lucide-react';
+import { useTranslation } from '../utils/i18n';
 
 interface DashboardScreenProps {
   onOpenAddExpense: (date?: string) => void;
@@ -25,7 +26,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   onNavigateToHistory,
 }) => {
   const { expenses, categories, todayTotal, thisMonthTotal, isLoading } = useExpenses();
-  const { currency, currentMonthBudget } = useSettings();
+  const { settings, currency, currentMonthBudget } = useSettings();
+  const { t } = useTranslation();
   const [activeSubView, setActiveSubView] = useState<DashboardSubView>('savings');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
@@ -182,14 +184,15 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 <AnimatedNumber value={thisMonthTotal} currencyCode={currency.code} />
               </div>
               <div className="text-[11px] text-neutral-600 dark:text-emerald-200/80 font-medium mt-0.5">
-                Today:{' '}
-                <strong className="tabular-nums text-neutral-900 dark:text-white font-bold">
+                {t('Today')}
+                <strong className="tabular-nums text-neutral-900 dark:text-white font-bold ml-1">
                   <AnimatedNumber value={todayTotal} currencyCode={currency.code} />
                 </strong>
               </div>
             </div>
 
             <div className="flex flex-col items-end gap-1">
+              {/* Monthly Pill */}
               <div
                 className={`px-2.5 py-1 rounded-xl text-xs font-bold tabular-nums inline-flex items-center gap-1 shadow-xs ${
                   isOverBudget
@@ -198,16 +201,34 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 }`}
               >
                 {isOverBudget
-                  ? 'Over Budget'
-                  : `${currency.symbol} ${Math.abs(remainingBudget).toLocaleString()} Left`}
+                  ? t('Over Budget')
+                  : `${currency.symbol} ${Math.abs(remainingBudget).toLocaleString()} ${t('Left')}`}
               </div>
-              <span
-                className={`text-[10px] uppercase tracking-wider font-semibold ${
-                  isOverBudget ? 'text-rose-500/80' : 'text-neutral-500 dark:text-emerald-200/70'
-                }`}
-              >
-                {percentageUsed}% of {currency.symbol} {currentMonthBudget.toLocaleString()}
-              </span>
+              
+              {/* Daily Pill */}
+              {settings.defaultDailyBudget ? (() => {
+                const dailyRemaining = settings.defaultDailyBudget - todayTotal;
+                const isDailyOver = dailyRemaining < 0;
+                return (
+                  <div
+                    className={`px-2 py-0.5 mt-0.5 rounded-lg text-[10px] font-bold tabular-nums inline-flex items-center gap-1 ${
+                      isDailyOver
+                        ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                        : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border border-emerald-500/20'
+                    }`}
+                  >
+                    {isDailyOver ? t('Over Budget') : `${currency.symbol} ${Math.abs(dailyRemaining).toLocaleString()} ${t('Left')}`}
+                  </div>
+                );
+              })() : (
+                <span
+                  className={`text-[10px] uppercase tracking-wider font-semibold ${
+                    isOverBudget ? 'text-rose-500/80' : 'text-neutral-500 dark:text-emerald-200/70'
+                  }`}
+                >
+                  {percentageUsed}% {t('of')} {currency.symbol} {currentMonthBudget.toLocaleString()}
+                </span>
+              )}
             </div>
           </div>
 
