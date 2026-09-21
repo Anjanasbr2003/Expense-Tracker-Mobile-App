@@ -8,6 +8,7 @@ import { SpendingFootprintCard } from '../components/charts/SpendingFootprintCar
 import { getDateGroupHeader } from '../utils/dateUtils';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { AnimatedNumber } from '../components/common/AnimatedNumber';
+import { useTranslation } from '../utils/i18n';
 
 interface HistoryScreenProps {
   onOpenAddExpense: () => void;
@@ -29,6 +30,8 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
   const [selectedTimeRange, setSelectedTimeRange] = useState<'all' | 'this_month' | 'last_month'>('all');
   const [sortBy, setSortBy] = useState<ExpenseSortOption>('newest');
   const [showFilters, setShowFilters] = useState<boolean>(false);
+
+  const { t } = useTranslation();
 
   // Fast O(1) Category Map
   const fullCategoryMap = useMemo(() => {
@@ -149,7 +152,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
           <Search size={15} className="absolute left-3.5 text-emerald-400/80" />
           <input
             type="text"
-            placeholder="Search transactions..."
+            placeholder={t('Search transactions...')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-8 py-2.5 rounded-2xl glass-panel border border-lime-400/20 text-xs font-semibold text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-500 outline-hidden focus:border-lime-400/60 transition-colors"

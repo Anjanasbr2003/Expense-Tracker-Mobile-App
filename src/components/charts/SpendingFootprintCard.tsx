@@ -3,6 +3,7 @@ import { useSettings } from '../../context/SettingsContext';
 import { useExpenses } from '../../context/ExpenseContext';
 import { formatCurrency } from '../../utils/currency';
 import { ShoppingBag, Coffee, CreditCard, ChevronRight } from 'lucide-react';
+import { useTranslation } from '../../utils/i18n';
 
 interface SpendingFootprintProps {
   totalSpent: number;
@@ -15,6 +16,7 @@ export const SpendingFootprintCard: React.FC<SpendingFootprintProps> = ({
 }) => {
   const { currency } = useSettings();
   const { expenses, categories } = useExpenses();
+  const { t } = useTranslation();
 
   // Dynamic 50/30/20 category bucket calculations based on current month's expenses
   const { essentialsPct, treatPct, financePct, essentialsAmount, treatAmount, financeAmount } =
@@ -100,10 +102,10 @@ export const SpendingFootprintCard: React.FC<SpendingFootprintProps> = ({
       <div className="flex items-center justify-between mb-2">
         <div>
           <h3 className="text-sm font-bold tracking-tight text-neutral-900 dark:text-white">
-            Spending Footprint
+            {t('Spending Footprint')}
           </h3>
           <p className="text-[10px] text-emerald-600 dark:text-emerald-300/80 font-medium">
-            This Month Overview
+            {t('This Month Overview')}
           </p>
         </div>
 
@@ -112,7 +114,7 @@ export const SpendingFootprintCard: React.FC<SpendingFootprintProps> = ({
             type="button"
             onClick={onSeeDetails}
             className="w-7 h-7 rounded-full glass-button text-neutral-700 dark:text-emerald-200 hover:text-neutral-950 dark:hover:text-white flex items-center justify-center border border-lime-500/20 active:scale-95 transition-all cursor-pointer"
-            title="See Details"
+            title={t('See Details')}
           >
             <ChevronRight size={15} />
           </button>
@@ -126,7 +128,7 @@ export const SpendingFootprintCard: React.FC<SpendingFootprintProps> = ({
             {formatCurrency(totalSpent, currency.code)}
           </span>
           <span className="block text-[11px] text-neutral-500 dark:text-emerald-300/75 font-medium">
-            Total Spendings
+            {t('Total Spendings')}
           </span>
         </div>
 
@@ -134,15 +136,15 @@ export const SpendingFootprintCard: React.FC<SpendingFootprintProps> = ({
         <div className="flex flex-col gap-1 text-[10px] text-neutral-600 dark:text-emerald-200/90 font-medium">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-lime-400 shadow-[0_0_6px_rgba(34,197,94,0.5)]" />
-            <span>Essentials</span>
+            <span>{t('Essentials')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-500 dark:bg-orange-400 shadow-[0_0_6px_rgba(245,158,11,0.5)]" />
-            <span>Treat Yourself</span>
+            <span>{t('Treat Yourself')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-sky-500 dark:bg-sky-400 shadow-[0_0_6px_rgba(56,189,248,0.5)]" />
-            <span>Bills & Finance</span>
+            <span>{t('Bills & Finance')}</span>
           </div>
         </div>
       </div>
@@ -182,9 +184,9 @@ export const SpendingFootprintCard: React.FC<SpendingFootprintProps> = ({
         {/* Amount Sub-ticks */}
         <div className="flex justify-between px-0.5 mt-1 text-[9px] text-neutral-500 dark:text-emerald-200/60 font-mono">
           <span>{formatCurrency(0, currency.code)}</span>
-          <span>{hasExpenses ? formatCurrency(essentialsAmount, currency.code) : 'Needs'}</span>
-          <span>{hasExpenses ? formatCurrency(treatAmount, currency.code) : 'Wants'}</span>
-          <span>{hasExpenses ? formatCurrency(financeAmount, currency.code) : 'Buffer'}</span>
+          <span>{hasExpenses ? formatCurrency(essentialsAmount, currency.code) : t('Needs')}</span>
+          <span>{hasExpenses ? formatCurrency(treatAmount, currency.code) : t('Wants')}</span>
+          <span>{hasExpenses ? formatCurrency(financeAmount, currency.code) : t('Buffer')}</span>
         </div>
       </div>
 
@@ -199,7 +201,7 @@ export const SpendingFootprintCard: React.FC<SpendingFootprintProps> = ({
             {essentialsPct}%
           </span>
           <span className="text-[9px] text-neutral-600 dark:text-emerald-200/70 font-medium leading-tight mt-0.5">
-            Essentials
+            {t('Essentials')}
           </span>
         </div>
 
@@ -212,7 +214,7 @@ export const SpendingFootprintCard: React.FC<SpendingFootprintProps> = ({
             {treatPct}%
           </span>
           <span className="text-[9px] text-neutral-600 dark:text-emerald-200/70 font-medium leading-tight mt-0.5">
-            Treats
+            {t('Treats')}
           </span>
         </div>
 
@@ -225,7 +227,7 @@ export const SpendingFootprintCard: React.FC<SpendingFootprintProps> = ({
             {financePct}%
           </span>
           <span className="text-[9px] text-neutral-600 dark:text-emerald-200/70 font-medium leading-tight mt-0.5">
-            Finance
+            {t('Finance')}
           </span>
         </div>
       </div>

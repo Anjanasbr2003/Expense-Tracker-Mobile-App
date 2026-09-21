@@ -23,6 +23,7 @@ import {
   CalendarClock,
 } from 'lucide-react';
 import { executeThemeTransition } from '../utils/themeTransition';
+import { useTranslation } from '../utils/i18n';
 
 export const SettingsScreen: React.FC = () => {
   const {
@@ -38,6 +39,7 @@ export const SettingsScreen: React.FC = () => {
     setWeeklyBudget,
     setLanguage,
   } = useSettings();
+  const { t } = useTranslation();
   const {
     expenses,
     categories,
@@ -272,7 +274,7 @@ export const SettingsScreen: React.FC = () => {
       <section className="glass-panel p-3.5 rounded-2xl space-y-3">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
-            <Tags size={16} /> {/* Using Tags as generic icon or maybe a different one */}
+            <Tags size={16} />
           </div>
           <div>
             <h3 className="text-xs font-bold text-neutral-900 dark:text-white">
@@ -318,7 +320,7 @@ export const SettingsScreen: React.FC = () => {
           </div>
           <div>
             <h3 className="text-xs font-bold text-neutral-900 dark:text-white">
-              Appearance
+              {t('Theme Preferences')}
             </h3>
             <p className="text-[10px] text-neutral-500 dark:text-neutral-400">
               OLED Deep Black or Light
@@ -411,10 +413,10 @@ export const SettingsScreen: React.FC = () => {
         <div className="space-y-1.5 pt-1">
           <div className="flex items-center justify-between">
             <label className="text-[11px] font-bold text-neutral-700 dark:text-neutral-300">
-              Default Baseline Budget
+              {t('Default Baseline Budget')}
             </label>
             <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
-              Auto-applies on 1st of month
+              {t('Auto-applies on 1st of month')}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -448,7 +450,7 @@ export const SettingsScreen: React.FC = () => {
         <div className="space-y-1.5 pt-1">
           <div className="flex items-center justify-between">
             <label className="text-[11px] font-bold text-neutral-700 dark:text-neutral-300">
-              Weekly Budget Limit
+              {t('Weekly Budget Limit')}
             </label>
           </div>
           <div className="flex items-center gap-2">
@@ -482,7 +484,7 @@ export const SettingsScreen: React.FC = () => {
         <div className="space-y-1.5 pt-1">
           <div className="flex items-center justify-between">
             <label className="text-[11px] font-bold text-neutral-700 dark:text-neutral-300">
-              Daily Budget Limit
+              {t('Daily Budget Limit')}
             </label>
           </div>
           <div className="flex items-center gap-2">
@@ -512,16 +514,14 @@ export const SettingsScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* 3e. Preview 1st-of-the-Month Prompt */}
+        {/* Test Prompt Button */}
         <button
           type="button"
-          onClick={() => {
-            window.dispatchEvent(new CustomEvent('open_monthly_budget_prompt'));
-          }}
-          className="w-full mt-2 py-2 px-3 rounded-xl glass-button border border-lime-400/25 text-xs font-semibold text-lime-300 flex items-center justify-center gap-2 hover:bg-lime-500/10 active:scale-95 transition-all cursor-pointer"
+          onClick={() => window.dispatchEvent(new CustomEvent('open_monthly_budget_prompt'))}
+          className="w-full py-2.5 px-3 rounded-xl glass-button text-lime-600 dark:text-lime-400 font-bold text-[11px] flex items-center justify-center gap-1.5 active:scale-95 transition-all mt-2 cursor-pointer"
         >
-          <CalendarClock size={14} className="text-lime-400" />
-          <span>Preview 1st-of-Month Budget Prompt</span>
+          <CalendarClock size={14} />
+          {t('Preview 1st-of-Month Budget Prompt')}
         </button>
       </section>
 

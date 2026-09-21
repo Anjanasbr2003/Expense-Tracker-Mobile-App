@@ -18,6 +18,7 @@ export interface AppSettings {
   hasLoadedInitialData: boolean;
   userName?: string;
   hasCompletedOnboarding?: boolean;
+  hasCompletedWalkthrough?: boolean;
   lastBudgetPromptMonth?: string;
 }
 

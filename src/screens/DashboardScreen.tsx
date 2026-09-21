@@ -155,7 +155,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
           <div className="flex items-start justify-between relative z-10">
             <div>
               <h2 className="text-[13px] font-bold text-neutral-800 dark:text-emerald-100 uppercase tracking-widest mb-0.5">
-                Spendings
+                {t('Spendings')}
               </h2>
               <p className="text-[10px] text-emerald-600 dark:text-emerald-300/70 font-medium">
                 01 {monthName} - End of Month
@@ -317,11 +317,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             <Plus size={16} strokeWidth={2.6} />
           </div>
           <span className="text-xs font-bold tracking-tight">
-            {selectedDate ? `Record Expense for ${formatReadableDate(selectedDate)}` : 'Record New Expense'}
+            {selectedDate ? `${t('Add Expense for')} ${formatReadableDate(selectedDate)}` : t('Record New Expense')}
           </span>
         </div>
         <span className="text-[11px] font-medium text-lime-600 dark:text-lime-400 group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
-          <span>Fast entry</span>
+          <span>{t('Fast entry')}</span>
           <ArrowRight size={12} />
         </span>
       </button>

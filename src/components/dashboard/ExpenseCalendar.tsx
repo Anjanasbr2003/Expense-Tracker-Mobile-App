@@ -4,6 +4,7 @@ import { formatCurrency } from '../../utils/currency';
 import { getTodayDateString, getMonthName } from '../../utils/dateUtils';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, X, CalendarDays } from 'lucide-react';
 import { hapticLight } from '../../utils/haptics';
+import { useTranslation } from '../../utils/i18n';
 
 interface ExpenseCalendarProps {
   expenses: Expense[];
@@ -31,6 +32,7 @@ export const ExpenseCalendar: React.FC<ExpenseCalendarProps> = ({
   onSelectDate,
   currencyCode,
 }) => {
+  const { t } = useTranslation();
   const todayStr = useMemo(() => getTodayDateString(), []);
   const today = useMemo(() => new Date(), []);
 
@@ -223,7 +225,7 @@ export const ExpenseCalendar: React.FC<ExpenseCalendarProps> = ({
               {monthLabel}
             </h3>
             <p className="text-[10px] text-emerald-600 dark:text-emerald-300/80 font-semibold tabular-nums">
-              Spent: {formatCurrency(monthTotal, currencyCode)}
+              {t('Spent:')} {formatCurrency(monthTotal, currencyCode)}
             </p>
           </div>
         </div>
@@ -237,7 +239,7 @@ export const ExpenseCalendar: React.FC<ExpenseCalendarProps> = ({
               className="px-2 py-1 rounded-lg glass-button text-[10px] font-bold text-lime-600 dark:text-lime-300 hover:border-lime-400/50 active:scale-95 transition-all cursor-pointer"
               title="Jump to today"
             >
-              Today
+              {t('Today')}
             </button>
           )}
 
@@ -252,9 +254,8 @@ export const ExpenseCalendar: React.FC<ExpenseCalendarProps> = ({
                 ? 'bg-lime-400/20 text-lime-400 border-lime-400/40'
                 : 'glass-button text-neutral-600 dark:text-emerald-200/80 border-lime-400/20'
             }`}
-            title={isWeekView ? 'Switch to Month view' : 'Switch to Week view'}
           >
-            {isWeekView ? 'Week' : 'Month'}
+            {isWeekView ? 'Week' : t('Month')}
           </button>
 
           <div className="flex items-center gap-0.5 ml-1">

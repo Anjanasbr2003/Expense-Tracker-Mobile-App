@@ -21,6 +21,7 @@ interface SettingsContextValue {
   setWeeklyBudget: (amount: number) => Promise<void>;
   setLanguage: (lang: 'en' | 'si') => Promise<void>;
   completeOnboarding: (name: string, monthlyBudget: number, currencyCode?: string) => Promise<void>;
+  completeWalkthrough: () => Promise<void>;
   shouldPromptMonthlyBudget: boolean;
   dismissMonthlyBudgetPrompt: () => Promise<void>;
   isDark: boolean;
@@ -97,6 +98,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       mounted = false;
     };
   }, []);
+
+  // Update lang attribute on HTML element
+  useEffect(() => {
+    document.documentElement.lang = settings.language || 'en';
+  }, [settings.language]);
 
   // Update theme class on HTML element
   useEffect(() => {
@@ -260,6 +266,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setCurrentMonthBudget(monthlyBudget);
   };
 
+  const completeWalkthrough = async () => {
+    const updated = { ...settings, hasCompletedWalkthrough: true };
+    await persistSettings(updated);
+  };
+
   // Should prompt user on the 1st day of every month (or first launch of a new month) if not yet answered for this month
   const shouldPromptMonthlyBudget = Boolean(
     settings.hasCompletedOnboarding &&
@@ -298,6 +309,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setWeeklyBudget,
         setLanguage,
         completeOnboarding,
+        completeWalkthrough,
         shouldPromptMonthlyBudget,
         dismissMonthlyBudgetPrompt,
         isDark,
