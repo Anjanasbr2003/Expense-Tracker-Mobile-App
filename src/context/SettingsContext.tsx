@@ -17,7 +17,11 @@ interface SettingsContextValue {
     setAsDefault?: boolean
   ) => Promise<void>;
   setUserName: (name: string) => Promise<void>;
+  setDailyBudget: (amount: number) => Promise<void>;
+  setWeeklyBudget: (amount: number) => Promise<void>;
+  setLanguage: (lang: 'en' | 'si') => Promise<void>;
   completeOnboarding: (name: string, monthlyBudget: number, currencyCode?: string) => Promise<void>;
+  completeWalkthrough: () => Promise<void>;
   shouldPromptMonthlyBudget: boolean;
   dismissMonthlyBudgetPrompt: () => Promise<void>;
   isDark: boolean;
@@ -94,6 +98,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       mounted = false;
     };
   }, []);
+
+  // Update lang attribute on HTML element
+  useEffect(() => {
+    document.documentElement.lang = settings.language || 'en';
+  }, [settings.language]);
 
   // Update theme class on HTML element
   useEffect(() => {
@@ -218,6 +227,21 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     await persistSettings(updated);
   };
 
+  const setDailyBudget = async (amount: number) => {
+    const updated = { ...settings, defaultDailyBudget: amount };
+    await persistSettings(updated);
+  };
+
+  const setWeeklyBudget = async (amount: number) => {
+    const updated = { ...settings, defaultWeeklyBudget: amount };
+    await persistSettings(updated);
+  };
+
+  const setLanguage = async (lang: 'en' | 'si') => {
+    const updated = { ...settings, language: lang };
+    await persistSettings(updated);
+  };
+
   const completeOnboarding = async (name: string, monthlyBudget: number, currencyCode?: string) => {
     const now = new Date();
     const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -240,6 +264,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       updatedAt: Date.now(),
     });
     setCurrentMonthBudget(monthlyBudget);
+  };
+
+  const completeWalkthrough = async () => {
+    const updated = { ...settings, hasCompletedWalkthrough: true };
+    await persistSettings(updated);
   };
 
   // Should prompt user on the 1st day of every month (or first launch of a new month) if not yet answered for this month
@@ -276,7 +305,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setMonthlyBudget,
         updateMonthBudget,
         setUserName,
+        setDailyBudget,
+        setWeeklyBudget,
+        setLanguage,
         completeOnboarding,
+        completeWalkthrough,
         shouldPromptMonthlyBudget,
         dismissMonthlyBudgetPrompt,
         isDark,

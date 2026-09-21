@@ -14,14 +14,18 @@ public class WidgetDataHelper {
     public static final String KEY_MONTH_SPENT = "month_spent";
     public static final String KEY_MONTHLY_BUDGET = "monthly_budget";
     public static final String KEY_CURRENCY = "currency_symbol";
+    public static final String KEY_MONTHLY_REMAINING = "monthly_remaining";
+    public static final String KEY_WEEKLY_REMAINING = "weekly_remaining";
 
-    public static void saveMetrics(Context context, double todaySpent, double monthSpent, double monthlyBudget, String currency) {
+    public static void saveMetrics(Context context, double todaySpent, double monthSpent, double monthlyBudget, String currency, double monthlyRemaining, double weeklyRemaining) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         prefs.edit()
              .putFloat(KEY_TODAY_SPENT, (float) todaySpent)
              .putFloat(KEY_MONTH_SPENT, (float) monthSpent)
              .putFloat(KEY_MONTHLY_BUDGET, (float) monthlyBudget)
              .putString(KEY_CURRENCY, currency != null ? currency : "Rs.")
+             .putFloat(KEY_MONTHLY_REMAINING, (float) monthlyRemaining)
+             .putFloat(KEY_WEEKLY_REMAINING, (float) weeklyRemaining)
              .apply();
 
         updateAllWidgets(context);

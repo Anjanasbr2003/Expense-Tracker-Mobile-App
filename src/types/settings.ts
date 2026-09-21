@@ -11,10 +11,14 @@ export interface CurrencyConfig {
 export interface AppSettings {
   currencyCode: string;
   theme: ThemeMode;
+  language?: 'en' | 'si';
   defaultMonthlyBudget?: number;
+  defaultWeeklyBudget?: number;
+  defaultDailyBudget?: number;
   hasLoadedInitialData: boolean;
   userName?: string;
   hasCompletedOnboarding?: boolean;
+  hasCompletedWalkthrough?: boolean;
   lastBudgetPromptMonth?: string;
 }
 

@@ -5,7 +5,9 @@ export function syncWidgetMetrics(
   todaySpent: number,
   monthSpent: number,
   monthlyBudget: number,
-  currencySymbol: string
+  currencySymbol: string,
+  monthlyRemaining: number,
+  weeklyRemaining: number
 ) {
   try {
     if (
@@ -16,7 +18,9 @@ export function syncWidgetMetrics(
         todaySpent,
         monthSpent,
         monthlyBudget,
-        currencySymbol || 'Rs.'
+        currencySymbol || 'Rs.',
+        monthlyRemaining,
+        weeklyRemaining
       );
     }
   } catch (err) {

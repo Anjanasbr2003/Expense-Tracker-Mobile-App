@@ -64,6 +64,16 @@
             android:textColor="#86EFAC"
             android:textSize="10sp"
             android:layout_marginTop="1dp" />
+
+        <TextView
+            android:id="@+id/widget_budget_weekly_remaining"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Weekly Left: Rs. 0.00"
+            android:textColor="#FBBF24"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:layout_marginTop="1dp" />
     </LinearLayout>
 
     <!-- Status Pill -->

@@ -9,11 +9,12 @@ interface OnboardingModalProps {
 }
 
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
-  const { settings, completeOnboarding } = useSettings();
+  const { settings, completeOnboarding, setLanguage: setSettingsLanguage } = useSettings();
 
   const [name, setName] = useState<string>('');
   const [budgetStr, setBudgetStr] = useState<string>('50000');
   const [currencyCode, setCurrencyCode] = useState<string>(settings.currencyCode || 'LKR');
+  const [language, setLanguage] = useState<'en' | 'si'>((settings.language as 'en' | 'si') || 'en');
   const [error, setError] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -37,6 +38,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) 
 
     setIsSubmitting(true);
     try {
+      // We will need to update settings with language as well. We can do it via setLanguage from context.
+      // Let's destructure setLanguage from useSettings and call it here.
+      if (setSettingsLanguage) setSettingsLanguage(language);
       await completeOnboarding(name.trim(), parsedBudget, currencyCode);
       onComplete();
     } catch (err) {
@@ -47,7 +51,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) 
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#030805]/85 backdrop-blur-xl animate-in fade-in duration-200 select-none overflow-y-auto overscroll-contain">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#030805] animate-in fade-in duration-200 select-none overflow-y-auto overscroll-contain">
       <div className="w-full max-w-md my-auto max-h-[92vh] overflow-y-auto rounded-3xl glass-emerald-card border border-lime-400/35 p-6 shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_30px_rgba(34,197,94,0.2)] animate-scale-check">
         {/* Header Branding & SpendWise Logo */}
         <div className="flex flex-col items-center text-center mb-6">
@@ -141,31 +145,63 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) 
             </div>
           </div>
 
-          {/* Currency Selection */}
-          <div>
-            <label className="block text-xs font-bold text-neutral-700 dark:text-emerald-300/90 mb-1.5">
-              Primary Currency
-            </label>
-            <div className="grid grid-cols-3 gap-1.5">
-              {Object.values(SUPPORTED_CURRENCIES).map((c) => (
+          {/* Language & Currency Selection */}
+          <div className="space-y-4">
+            {/* Language Selection */}
+            <div>
+              <label className="block text-[11px] font-bold text-neutral-700 dark:text-emerald-300/90 mb-1.5">
+                Language / භාෂාව
+              </label>
+              <div className="grid grid-cols-2 gap-2">
                 <button
-                  key={c.code}
                   type="button"
-                  onClick={() => setCurrencyCode(c.code)}
-                  className={`py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1 cursor-pointer transition-all ${
-                    currencyCode === c.code
-                      ? 'bg-emerald-500 text-white dark:bg-lime-400 dark:text-black shadow-xs'
-                      : 'glass-button text-neutral-600 dark:text-neutral-300'
+                  onClick={() => setLanguage('en')}
+                  className={`py-2.5 px-2 rounded-xl text-xs font-semibold text-center transition-all cursor-pointer ${
+                    language === 'en'
+                      ? 'border border-emerald-500 bg-emerald-500/20 text-emerald-500 dark:text-emerald-400 font-bold shadow-xs'
+                      : 'glass-button text-neutral-700 dark:text-neutral-300'
                   }`}
                 >
-                  <span>{c.code}</span>
-                  <span className="text-[10px] opacity-75 font-normal">({c.symbol})</span>
+                  English
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => setLanguage('si')}
+                  className={`py-2.5 px-2 rounded-xl text-xs font-semibold text-center transition-all cursor-pointer ${
+                    language === 'si'
+                      ? 'border border-emerald-500 bg-emerald-500/20 text-emerald-500 dark:text-emerald-400 font-bold shadow-xs'
+                      : 'glass-button text-neutral-700 dark:text-neutral-300'
+                  }`}
+                >
+                  සිංහල (Sinhala)
+                </button>
+              </div>
+            </div>
+
+            {/* Currency Selection */}
+            <div>
+              <label className="block text-[11px] font-bold text-neutral-700 dark:text-emerald-300/90 mb-1.5">
+                Primary Currency
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {Object.values(SUPPORTED_CURRENCIES).map((c) => (
+                  <button
+                    key={c.code}
+                    type="button"
+                    onClick={() => setCurrencyCode(c.code)}
+                    className={`py-2 px-1 rounded-xl text-center transition-all cursor-pointer ${
+                      currencyCode === c.code
+                        ? 'border border-emerald-500 bg-emerald-500/20 text-emerald-500 dark:text-emerald-400 font-bold shadow-xs'
+                        : 'glass-button text-neutral-700 dark:text-neutral-300'
+                    }`}
+                  >
+                    <div className="text-[11px] font-bold">{c.code}</div>
+                    <div className="text-[9px] opacity-70">{c.symbol}</div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-
-          {/* Error Message */}
           {error && (
             <div className="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-semibold text-center animate-shake">
               {error}

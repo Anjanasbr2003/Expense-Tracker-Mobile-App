@@ -12,12 +12,15 @@ import { SettingsScreen } from './screens/SettingsScreen';
 import { ExpenseFormModal } from './components/expense/ExpenseFormModal';
 import { ConfirmModal } from './components/common/ConfirmModal';
 import { OnboardingModal } from './components/common/OnboardingModal';
+import { AppWalkthroughModal } from './components/common/AppWalkthroughModal';
 import { MonthlyBudgetPromptModal } from './components/budget/MonthlyBudgetPromptModal';
 import { syncWidgetMetrics } from './utils/widgetSync';
+import { useTranslation } from './utils/i18n';
 import type { Expense } from './types';
 
 const MainApp: React.FC = () => {
   const { settings, currency, currentMonthBudget, shouldPromptMonthlyBudget } = useSettings();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [isManualMonthlyPromptOpen, setIsManualMonthlyPromptOpen] = useState<boolean>(false);
@@ -25,12 +28,29 @@ const MainApp: React.FC = () => {
   const [initialFormDate, setInitialFormDate] = useState<string | undefined>();
   const [deletingExpense, setDeletingExpense] = useState<Expense | null>(null);
 
-  const { deleteExpense, todayTotal, thisMonthTotal } = useExpenses();
+  const { expenses, deleteExpense, todayTotal, thisMonthTotal } = useExpenses();
 
   // Synchronize live metrics with Android Home Screen Widgets
   useEffect(() => {
-    syncWidgetMetrics(todayTotal, thisMonthTotal, currentMonthBudget || 50000, currency.symbol);
-  }, [todayTotal, thisMonthTotal, currentMonthBudget, currency.symbol]);
+    const monthlyRemaining = (currentMonthBudget || 50000) - thisMonthTotal;
+    const weeklyBudget = settings.defaultWeeklyBudget || 15000;
+    // Rough weekly spent calculation (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const weeklySpent = expenses
+      .filter((e: Expense) => new Date(e.date) >= sevenDaysAgo)
+      .reduce((acc: number, curr: Expense) => acc + curr.amount, 0);
+    const weeklyRemaining = weeklyBudget - weeklySpent;
+
+    syncWidgetMetrics(
+      todayTotal, 
+      thisMonthTotal, 
+      currentMonthBudget || 50000, 
+      currency.symbol, 
+      monthlyRemaining, 
+      weeklyRemaining
+    );
+  }, [todayTotal, thisMonthTotal, currentMonthBudget, currency.symbol, settings.defaultWeeklyBudget, expenses]);
 
   // Handle widget shortcut events from Android home screen widgets
   useEffect(() => {
@@ -84,7 +104,7 @@ const MainApp: React.FC = () => {
   // Screen header configurations
   const getHeaderInfo = () => {
     const today = new Date();
-    const dateFormatted = today.toLocaleDateString('en-US', {
+    const dateFormatted = today.toLocaleDateString(settings.language === 'si' ? 'si-LK' : 'en-US', {
       weekday: 'long',
       month: 'short',
       day: 'numeric',
@@ -94,28 +114,32 @@ const MainApp: React.FC = () => {
     switch (activeTab) {
       case 'home':
         return {
-          title: 'SpendWise',
+          title: t('SpendWise'),
           subtitle: dateFormatted,
         };
       case 'history':
         return {
-          title: 'Transactions',
-          subtitle: 'All spending history',
+          title: t('Transactions'),
+          subtitle: t('All spending history'),
         };
       case 'analytics':
         return {
-          title: 'Spending Insights',
-          subtitle: 'Monthly & yearly analytics',
+          title: t('Spending Insights'),
+          subtitle: t('Monthly & yearly analytics'),
         };
       case 'settings':
         return {
-          title: 'Settings',
-          subtitle: 'Preferences & backup',
+          title: t('Settings'),
+          subtitle: t('Preferences & backup'),
         };
     }
   };
 
   const headerInfo = getHeaderInfo();
+
+  if (!settings.hasCompletedOnboarding) {
+    return <OnboardingModal onComplete={() => {}} />;
+  }
 
   return (
     <>
@@ -186,9 +210,9 @@ const MainApp: React.FC = () => {
       />
       </MobileFrame>
 
-      {/* First-Time Onboarding Modal (Shown only on first launch) */}
-      {!settings.hasCompletedOnboarding && (
-        <OnboardingModal onComplete={() => {}} />
+      {/* App Walkthrough (Shown after onboarding, once) */}
+      {!settings.hasCompletedWalkthrough && (
+        <AppWalkthroughModal />
       )}
 
       {/* 1st of the Month Budget Planning Prompt Modal */}

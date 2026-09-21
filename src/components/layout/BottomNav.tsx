@@ -3,6 +3,7 @@ import { Home, ReceiptText, BarChart2, Settings, Plus } from 'lucide-react';
 import { useLiquidGlassPhysics } from '../../hooks/useLiquidGlassPhysics';
 import { LiquidGlassCapsule } from './LiquidGlassCapsule';
 import { hapticLight, hapticMedium } from '../../utils/haptics';
+import { useTranslation } from '../../utils/i18n';
 
 export type TabType = 'home' | 'history' | 'analytics' | 'settings';
 
@@ -18,6 +19,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onQuickAdd,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const { t } = useTranslation();
 
   // Dedicated refs for dynamic bounding rect tracking
   const homeRef = useRef<HTMLButtonElement | null>(null);
@@ -75,7 +77,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           >
             <Home size={20} strokeWidth={activeTab === 'home' ? 2.4 : 1.8} />
           </div>
-          <span className="text-[10px] font-semibold mt-1 tracking-tight leading-none">Home</span>
+          <span className="text-[10px] font-semibold mt-1 tracking-tight leading-none">{t('Home')}</span>
         </button>
 
         {/* 2. Accounts / History Tab */}
@@ -97,11 +99,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           >
             <ReceiptText size={20} strokeWidth={activeTab === 'history' ? 2.4 : 1.8} />
           </div>
-          <span className="text-[10px] font-semibold mt-1 tracking-tight leading-none">History</span>
+          <span className="text-[10px] font-semibold mt-1 tracking-tight leading-none">{t('History')}</span>
         </button>
 
         {/* Center Quick Add Action Button (Apple Glass Floating Orb) */}
-        <div className="relative z-30 flex items-center justify-center mx-2.5 shrink-0 -mt-3">
+        <div className="relative z-30 flex items-center justify-center mx-2.5 shrink-0">
           <div className="absolute inset-0 rounded-2xl bg-lime-400/30 blur-md animate-[auraPulse_2.5s_infinite_ease-in-out]"></div>
           <button
             type="button"
@@ -133,7 +135,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           >
             <BarChart2 size={20} strokeWidth={activeTab === 'analytics' ? 2.4 : 1.8} />
           </div>
-          <span className="text-[10px] font-semibold mt-1 tracking-tight leading-none">Analytics</span>
+          <span className="text-[10px] font-semibold mt-1 tracking-tight leading-none">{t('Analytics')}</span>
         </button>
 
         {/* 4. Settings / Profile Tab */}
@@ -155,7 +157,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           >
             <Settings size={20} strokeWidth={activeTab === 'settings' ? 2.4 : 1.8} />
           </div>
-          <span className="text-[10px] font-semibold mt-1 tracking-tight leading-none">Settings</span>
+          <span className="text-[10px] font-semibold mt-1 tracking-tight leading-none">{t('Settings')}</span>
         </button>
       </div>
     </nav>
