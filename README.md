@@ -26,8 +26,8 @@
 
 <img src="docs/anjana-sithum.jpg" alt="Anjana Sithum - Lead Developer & Creator of SpendWise" width="170" style="border-radius: 50%; border: 3px solid #84cc16; box-shadow: 0 0 25px rgba(132, 204, 22, 0.35); margin-bottom: 12px;" />
 
-### **Anjana Sithum**
-**Creator & Lead Mobile / Full-Stack Architect**
+### **Made By Anjana Sithum**
+
 
 *"SpendWise was designed and engineered from the ground up to redefine personal financial tracking: combining unmatched 120fps mobile performance, total offline privacy, hardware-accelerated liquid-glass visuals, a polished branded launch experience, and seamless Android home screen widgets."*
 
